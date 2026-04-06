@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Container, Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { Container, Form, Button, Alert, Row, Col, ProgressBar } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { registerUser } from '../utils/auth';
 
-function Signup() {
+function Signup({ onSignup }) {
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -13,12 +15,34 @@ function Signup() {
     const [submitError, setSubmitError] = useState('');
     const navigate = useNavigate();
 
+    const getPasswordStrength = (password) => {
+        if (!password) {
+            return { score: 0, label: '', variant: 'secondary' };
+        }
+
+        let score = 0;
+        if (password.length >= 8) score += 25;
+        if (/[A-Z]/.test(password)) score += 25;
+        if (/[0-9]/.test(password)) score += 25;
+        if (/[^A-Za-z0-9]/.test(password)) score += 25;
+
+        if (score <= 25) return { score, label: 'Weak', variant: 'danger' };
+        if (score <= 50) return { score, label: 'Fair', variant: 'warning' };
+        if (score <= 75) return { score, label: 'Good', variant: 'info' };
+        return { score, label: 'Strong', variant: 'success' };
+    };
+
+    const passwordStrength = getPasswordStrength(formData.password);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
             [name]: value
         });
+        if (submitError) {
+            setSubmitError('');
+        }
         // Clear error when user types
         if (errors[name]) {
             setErrors({
@@ -41,20 +65,29 @@ function Signup() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
             try {
-                localStorage.setItem('registeredUser', JSON.stringify({
+                const authenticatedUser = await registerUser({
                     username: formData.username,
                     email: formData.email,
                     password: formData.password
-                }));
-                alert('Signup successful! Please login.');
-                navigate('/login');
+                });
+
+                if (onSignup) {
+                    onSignup(authenticatedUser);
+                }
+
+                toast.success('Signup successful! Let us personalize your path.');
+                navigate('/onboarding');
             } catch (error) {
-                setSubmitError('Failed to save user data');
+                const message = error.message || 'Failed to save user data';
+                setSubmitError(message);
+                toast.error(message);
             }
+        } else {
+            toast.error('Please fix the errors in the form');
         }
     };
 
@@ -106,6 +139,20 @@ function Signup() {
                     <Form.Control.Feedback type="invalid">
                         {errors.password}
                     </Form.Control.Feedback>
+                    {formData.password && (
+                        <div className="mt-2">
+                            <div className="d-flex justify-content-between">
+                                <small>Password strength</small>
+                                <small className={`text-${passwordStrength.variant}`}>{passwordStrength.label}</small>
+                            </div>
+                            <ProgressBar
+                                now={passwordStrength.score}
+                                variant={passwordStrength.variant}
+                                className="mt-1"
+                                style={{ height: '6px' }}
+                            />
+                        </div>
+                    )}
                 </Form.Group>
 
                 <Form.Group controlId="formConfirmPassword" className="mb-3">

@@ -73,7 +73,7 @@ The application emphasizes **low friction entry** — users can browse all cours
 ### 5. **Contact & Support**
 
 - Contact information display (email, phone, address)
-- Contact form for inquiries (UI prepared, backend integration pending)
+- Contact form with validation, async submit simulation, and local persistence
 
 ### 6. **Responsive Navigation**
 
@@ -96,7 +96,7 @@ The application emphasizes **low friction entry** — users can browse all cours
 ### Frontend Framework & Libraries
 
 | Technology | Version | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | **React** | ^19.1.0 | Core UI framework |
 | **React DOM** | ^19.1.0 | DOM rendering |
 | **React Router DOM** | ^7.5.0 | Client-side routing |
@@ -176,13 +176,21 @@ codecampus/
    \`\`\`
    This will install all required packages listed in \`package.json\`.
 
-3. **Start the development server**
+3. **Create your environment file**
+   \`\`\`bash
+   copy .env.example .env
+   \`\`\`
+   Then set \`GEMINI_API_KEY\` in \`.env\`. This key is read by the Node server, not exposed in the frontend bundle.
+
+4. **Start the development servers**
    \`\`\`bash
    npm start
    \`\`\`
-   The app will open automatically at \`<http://localhost:3000\`>
+   This starts both:
+   - the React client at \`http://localhost:3000\`
+   - the local API server at \`http://localhost:3001\`
 
-4. **Build for production**
+5. **Build for production**
    \`\`\`bash
    npm run build
    \`\`\`
@@ -194,9 +202,10 @@ codecampus/
 
 ### \`npm start\`
 
-Launches the development server with hot-reload enabled.
+Launches both the frontend dev server and the local Express API server.
 
 - Opens browser at \`<http://localhost:3000\`>
+- Proxies AI requests to the backend at \`http://localhost:3001\`
 - Application reloads on file changes
 - Displays lint errors in console
 
@@ -230,12 +239,13 @@ Launches the test runner in interactive watch mode.
 ## Application Routes
 
 | Route | Component | Access | Purpose |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | \`/\` | Home | Public | Landing page with value proposition |
 | \`/courses\` | Courses | Public | Browse all available courses |
 | \`/contact\` | Contact | Public | Contact information and inquiry form |
 | \`/login\` | Login | Public | User login form |
 | \`/signup\` | Signup | Public | New user registration form |
+| \`/forgot-password\` | ForgotPassword | Public | Request password reset link (demo flow) |
 | \`/dashboard\` | Dashboard | Private* | View profile and saved courses |
 
 *Private = Requires authentication (redirects to login if not authenticated)
@@ -316,7 +326,7 @@ Launches the test runner in interactive watch mode.
 - Form validation (required fields)
 - Error messages for invalid credentials
 - Sign-up link for new users
-- Validates against stored registeredUser data
+- Validates against the backend auth API and stores a server-issued session token locally
 
 ---
 
@@ -328,8 +338,8 @@ Launches the test runner in interactive watch mode.
   - Password length minimum (6 characters)
   - Password match confirmation
   - Required field validation
-- Stores user data to localStorage
-- Redirects to login after successful signup
+- Creates the user through the backend auth API
+- Redirects to onboarding after successful signup (with toast feedback)
 
 ---
 
@@ -359,18 +369,18 @@ Launches the test runner in interactive watch mode.
 1. **Signup Process:**
    - User fills signup form with username, email, password
    - Validation checks for required fields, email format, password strength
-   - User data stored in \`localStorage\` under key \`registeredUser\`
-   - Redirects to login page after success
+   - User is created by the backend and a session token is returned
+   - Redirects to onboarding after success
 
 2. **Login Process:**
    - User enters email and password
-   - Credentials validated against stored \`registeredUser\`
-   - If valid: user object created and stored in \`localStorage['user']\`
-   - App state updates with user data
+   - Credentials are validated by the backend
+   - If valid: a session token is stored in localStorage and the app restores the authenticated user from the server
    - Automatic redirect to \`/dashboard\`
 
 3. **Logout:**
-   - Clears \`user\` and \`wishlist\` from localStorage
+   - Invalidates the backend session token
+   - Clears the local session token and wishlist
    - Resets app state
    - Redirects to home page
 
@@ -395,7 +405,7 @@ Launches the test runner in interactive watch mode.
 CodeCampus offers **6 core Computer Science courses:**
 
 | # | Course Name | Focus Area | Topics Covered |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | **Java Programming** | Backend/OOP | Basics, OOP, Collections, Multithreading |
 | 2 | **HTML-CSS-JAVASCRIPT** | Frontend | HTML5, CSS3, JavaScript fundamentals |
 | 3 | **React Development** | Frontend Frameworks | React Hooks, State Management, Modern UIs |
@@ -418,30 +428,29 @@ CodeCampus offers **6 core Computer Science courses:**
 
 **localStorage Keys:**
 
-- \`registeredUser\` - Stores signup data: \`{ username, email, password }\`
-- \`user\` - Stores logged-in user: \`{ username, email }\`
+- \`sessionToken\` - Stores the backend-issued session token used for authenticated requests
 - \`wishlist\` - Array of wishlisted course names
 
 ### Security Considerations (Current)
 
 ⚠️ **Important Notes:**
 
-- Passwords stored in plain text in localStorage (NOT secure)
-- **For production:** Implement backend authentication with hashed passwords and secure session/JWT tokens
+- AI requests are proxied through the local server so the Gemini API key is not exposed in the browser bundle
+- Authentication now uses server-issued session tokens, and user records are stored by the backend instead of relying on client-side localStorage trust
+- The backend applies basic authentication checks and Gemini request throttling, but you should still add stronger production-grade monitoring, persistence, and security controls before deploying publicly
 - **For production:** Use HTTPS and secure cookies
-- Current implementation suitable only for learning/demo purposes
+- Current implementation is safer for development and demos, but still not a substitute for a full production auth stack
 
 ---
 
 ## Data Persistence
 
-All user data is persisted client-side using **browser's localStorage**:
+Course preferences and learning activity are persisted client-side using **browser localStorage**, while authentication data is managed by the backend:
 
 \`\`\`javascript
 // Example: Accessing stored data
-const user = JSON.parse(localStorage.getItem('user'));
+const sessionToken = localStorage.getItem('sessionToken');
 const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-const registeredUser = JSON.parse(localStorage.getItem('registeredUser'));
 \`\`\`
 
 **Lifecycle:**

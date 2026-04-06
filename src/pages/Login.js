@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Form, Button, Alert, Row, Col } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { loginUser } from '../utils/auth';
 
 function Login({ onLogin }) {
     const [formData, setFormData] = useState({
@@ -9,7 +11,6 @@ function Login({ onLogin }) {
     });
     const [errors, setErrors] = useState({});
     const [loginError, setLoginError] = useState('');
-    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -17,6 +18,9 @@ function Login({ onLogin }) {
             ...formData,
             [name]: value
         });
+        if (loginError) {
+            setLoginError('');
+        }
         if (errors[name]) {
             setErrors({
                 ...errors,
@@ -33,20 +37,21 @@ function Login({ onLogin }) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
-            const registeredUser = JSON.parse(localStorage.getItem('registeredUser'));
-            if (registeredUser &&
-                registeredUser.email === formData.email &&
-                registeredUser.password === formData.password) {
-                onLogin({
-                    username: registeredUser.username,
-                    email: formData.email
+            try {
+                const authenticatedUser = await loginUser({
+                    email: formData.email,
+                    password: formData.password
                 });
-                navigate('/dashboard');
-            } else {
-                setLoginError('Invalid email or password');
+
+                onLogin(authenticatedUser);
+                toast.success(`Welcome back, ${authenticatedUser.username}!`);
+            } catch (error) {
+                const message = error.message || 'Invalid email or password';
+                setLoginError(message);
+                toast.error(message);
             }
         }
     };
@@ -89,6 +94,10 @@ function Login({ onLogin }) {
                 <Button variant="primary" type="submit" className="w-100 mb-3">
                     Login
                 </Button>
+
+                <div className="text-center mb-3">
+                    <Link to="/forgot-password">Forgot password?</Link>
+                </div>
 
                 <Row className="text-center">
                     <Col>

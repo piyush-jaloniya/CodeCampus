@@ -1,17 +1,56 @@
-import React from 'react';
-import { Container, Button, Row, Col } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Container, Button, Row, Col, Card, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { getTrendingCourses } from '../services/courseService';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 function Home() {
+    const [trendingCourses, setTrendingCourses] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTrendingCourses(getTrendingCourses(3));
+            setIsLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    const getDifficultyColor = (difficulty) => {
+        switch (difficulty) {
+            case 'Beginner': return 'success';
+            case 'Intermediate': return 'warning';
+            case 'Advanced': return 'danger';
+            default: return 'secondary';
+        }
+    };
+
+    const renderStars = (rating) => {
+        const stars = [];
+        const fullStars = Math.floor(rating);
+        const hasHalf = rating % 1 !== 0;
+
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) {
+                stars.push('★');
+            } else if (i === fullStars && hasHalf) {
+                stars.push('⭐');
+            } else {
+                stars.push('☆');
+            }
+        }
+
+        return stars.join('');
+    };
+
     return (
         <>
-            {/* Hero Section with Background Image */}
             <div
                 className="hero-section text-white text-center py-5"
                 style={{
                     backgroundImage: 'linear-gradient(rgba(61, 61, 61, 0.7), rgba(0, 0, 0, 0.7)), url(https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80)',
-
-                    backgroundPosition: 'center',
+                    backgroundPosition: 'center'
                 }}
             >
                 <Container>
@@ -28,7 +67,6 @@ function Home() {
                 </Container>
             </div>
 
-            {/* Features Section with Images */}
             <Container className="my-5">
                 <h2 className="text-center mb-5">Why Choose CodeCampus?</h2>
                 <Row className="g-4">
@@ -71,7 +109,6 @@ function Home() {
                 </Row>
             </Container>
 
-            {/* Call-to-Action Section */}
             <div className="bg-light py-5">
                 <Container className="text-center">
                     <h2 className="mb-4">Ready to Start Learning?</h2>
@@ -80,6 +117,40 @@ function Home() {
                     </Button>
                 </Container>
             </div>
+
+            <Container className="my-5">
+                <h2 className="text-center mb-5">Trending Courses</h2>
+                {isLoading ? (
+                    <LoadingSkeleton count={3} />
+                ) : (
+                    <Row className="g-4 justify-content-center">
+                        {trendingCourses.map((course) => (
+                            <Col key={course.name} md={4}>
+                                <Card className="h-100 shadow-sm border-0">
+                                    <Card.Img variant="top" src={course.image} style={{ height: '200px', objectFit: 'cover' }} />
+                                    <Card.Body className="d-flex flex-column">
+                                        <Card.Title>{course.name}</Card.Title>
+                                        <div className="mb-2">
+                                            <small className="text-warning">
+                                                {renderStars(course.rating)} <span className="text-dark fw-bold">{course.rating}</span>
+                                                <span className="text-muted"> ({course.reviews} reviews)</span>
+                                            </small>
+                                        </div>
+                                        <div className="mb-3">
+                                            <Badge bg="info" className="me-2">{course.category}</Badge>
+                                            <Badge bg={getDifficultyColor(course.difficulty)}>{course.difficulty}</Badge>
+                                        </div>
+                                        <p className="text-muted small flex-grow-1">Enroll now to get started with this trending course</p>
+                                        <Button as={Link} to="/courses" variant="primary" className="align-self-start">
+                                            Learn More
+                                        </Button>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                )}
+            </Container>
         </>
     );
 }

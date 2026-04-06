@@ -1,64 +1,178 @@
-import React from 'react';
-import { Container, Row } from 'react-bootstrap';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Container, Row, Form, InputGroup, Button } from 'react-bootstrap';
 import CourseCard from '../components/CourseCard';
-
-const courses = [
-    {
-        name: 'Java Programming',
-        description: 'Master Java from basics to advanced concepts like OOP, Collections, and Multithreading.',
-        link: 'https://www.youtube.com/playlist?list=PLfqMhTWNBTe3LtFWcvwpqTkUSlB32kJop',
-        image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
-    },
-    {
-        name: 'HTML-CSS-JAVASCRIPT',
-        description: 'Build beautiful websites with HTML5, modern CSS3 and JS techniques.',
-        link: 'https://youtube.com/playlist?list=PLfqMhTWNBTe0PY9xunOzsP5kmYIz2Hu7i&si=IkhMCge-k1Btb_er',
-        image: 'https://images.unsplash.com/photo-1621839673705-6617adf9e890?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80'
-    },
-    {
-        name: 'React Development',
-        description: 'Learn React hooks, state management, and building modern UIs.',
-        link: 'https://www.youtube.com/watch?v=SqcY0GlETPk&t=163s',
-        image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
-    },
-    {
-        name: 'Data Structures & Algorithm',
-        description: 'Understand arrays, linked lists, trees, and algorithms with implementations.',
-        link: 'https://www.youtube.com/watch?v=J0OvDNmAWNw',
-        image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
-    },
-    {
-        name: 'Machine Learning',
-        description: 'Introduction to ML models, neural networks, and TensorFlow.',
-        link: 'https://youtube.com/playlist?list=PLYwpaL_SFmcBhOEPwf5cFwqo5B-cP9G4P&si=3tG_SAa2XURlTSXJ',
-        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'
-    },
-    {
-        name: 'Python Programming',
-        description: 'From Python syntax to building real-world applications.',
-        link: 'https://www.youtube.com/watch?v=UrsmFxEIp5k',
-        image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80'
-    }
-];
+import CourseComparisonModal from '../components/CourseComparisonModal';
+import { toast } from 'react-toastify';
+import { getCourses, submitCourseRating } from '../services/courseService';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+import AdaptiveQuiz from '../components/AdaptiveQuiz';
 
 function Courses({ onWishlist, wishlist, user }) {
+    const [courses, setCourses] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+    const [compareList, setCompareList] = useState([]);
+    const [showComparison, setShowComparison] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [quizCourse, setQuizCourse] = useState(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setCourses(getCourses());
+            setIsLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, []);
+
+    const categories = ['All', ...new Set(courses.map((course) => course.category))];
+    const difficulties = ['All', ...new Set(courses.map((course) => course.difficulty))];
+
+    const toggleCompare = (course) => {
+        const isInList = compareList.some((item) => item.name === course.name);
+        if (isInList) {
+            setCompareList(compareList.filter((item) => item.name !== course.name));
+            return;
+        }
+
+        if (compareList.length < 3) {
+            setCompareList([...compareList, course]);
+            return;
+        }
+
+        alert('You can compare up to 3 courses at a time');
+    };
+
+    const isInCompare = (courseName) => compareList.some((item) => item.name === courseName);
+
+    const handleRateCourse = (courseName, value) => {
+        try {
+            const updated = submitCourseRating(courseName, value);
+            setCourses((previous) =>
+                previous.map((course) =>
+                    course.name === courseName
+                        ? { ...course, rating: updated.avgRating, reviews: updated.count }
+                        : course
+                )
+            );
+            toast.success(`Thanks for rating ${courseName}!`);
+        } catch (error) {
+            toast.error('Unable to submit rating right now.');
+        }
+    };
+
+    const filteredCourses = useMemo(() => {
+        return courses.filter((course) => {
+            const matchesSearch =
+                course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                course.description.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
+            const matchesDifficulty = selectedDifficulty === 'All' || course.difficulty === selectedDifficulty;
+
+            return matchesSearch && matchesCategory && matchesDifficulty;
+        });
+    }, [courses, searchTerm, selectedCategory, selectedDifficulty]);
+
     return (
         <Container className="mt-4">
-            <h2 className="text-center mb-4">Our Courses</h2>
-            <Row xs={1} sm={2} lg={3} className="g-4 justify-content-center">
-                {courses.map((course) => (
-                    <CourseCard
-                        key={course.name}
-                        user={user}
-                        course={course.name}
-                        description={course.description}
-                        link={course.link}
-                        image={course.image}
-                        onWishlist={onWishlist}
-                        wishlist={wishlist}
-                    />
-                ))}
+            <h2 className="text-center mb-5">Our Courses</h2>
+
+            <Row className="mb-4 g-3">
+                <div className="col-md-4">
+                    <InputGroup>
+                        <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
+                        <Form.Control
+                            placeholder="Search courses..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                        />
+                    </InputGroup>
+                </div>
+                <div className="col-md-4">
+                    <Form.Select
+                        value={selectedCategory}
+                        onChange={(event) => setSelectedCategory(event.target.value)}
+                    >
+                        {categories.map((category) => (
+                            <option key={category} value={category}>{category} Category</option>
+                        ))}
+                    </Form.Select>
+                </div>
+                <div className="col-md-4">
+                    <Form.Select
+                        value={selectedDifficulty}
+                        onChange={(event) => setSelectedDifficulty(event.target.value)}
+                    >
+                        {difficulties.map((difficulty) => (
+                            <option key={difficulty} value={difficulty}>{difficulty} Level</option>
+                        ))}
+                    </Form.Select>
+                </div>
             </Row>
+
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <small className="text-muted">
+                    Found {filteredCourses.length} course(s)
+                    {searchTerm && ` matching "${searchTerm}"`}
+                </small>
+                <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setShowComparison(true)}
+                    disabled={compareList.length === 0}
+                >
+                    Compare ({compareList.length})
+                </Button>
+            </div>
+
+            {isLoading ? (
+                <LoadingSkeleton count={6} />
+            ) : filteredCourses.length > 0 ? (
+                <Row xs={1} sm={2} lg={3} className="g-4 justify-content-center">
+                    {filteredCourses.map((course) => (
+                        <CourseCard
+                            key={course.name}
+                            user={user}
+                            courseId={course.id}
+                            course={course.name}
+                            courseSlug={course.slug}
+                            description={course.description}
+                            link={course.link}
+                            image={course.image}
+                            category={course.category}
+                            difficulty={course.difficulty}
+                            duration={course.duration}
+                            rating={course.rating}
+                            reviews={course.reviews}
+                            onWishlist={onWishlist}
+                            wishlist={wishlist}
+                            onCompare={() => toggleCompare(course)}
+                            isInCompare={isInCompare(course.name)}
+                            onRate={(value) => handleRateCourse(course.name, value)}
+                            onTestYourself={() => setQuizCourse(course)}
+                        />
+                    ))}
+                </Row>
+            ) : (
+                <div className="text-center py-5">
+                    <h5 className="text-muted">No courses found</h5>
+                    <p className="text-muted">Try adjusting your search or filters</p>
+                </div>
+            )}
+
+            <CourseComparisonModal
+                show={showComparison}
+                onClose={() => setShowComparison(false)}
+                coursesToCompare={compareList}
+            />
+
+            <AdaptiveQuiz
+                show={!!quizCourse}
+                onHide={() => setQuizCourse(null)}
+                courseId={quizCourse?.id || ''}
+                courseName={quizCourse?.name || ''}
+            />
         </Container>
     );
 }
