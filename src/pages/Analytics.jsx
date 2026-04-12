@@ -74,7 +74,7 @@ function Analytics() {
 
     React.useEffect(() => {
         document.title = 'Analytics – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const chartTooltipStyle = {

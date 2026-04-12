@@ -132,7 +132,7 @@ function Dashboard({ user, wishlist }) {
 
     useEffect(() => {
         document.title = 'Dashboard – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
     let recommendedPath = [];
     try {

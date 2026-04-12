@@ -17,7 +17,7 @@ function Signup({ onSignup }) {
 
     useEffect(() => {
         document.title = 'Sign Up – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const getPasswordStrength = (password) => {

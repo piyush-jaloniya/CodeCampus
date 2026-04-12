@@ -10,7 +10,7 @@ function Home() {
 
     useEffect(() => {
         document.title = 'CodeCampus – Learn. Build. Grow.';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     useEffect(() => {

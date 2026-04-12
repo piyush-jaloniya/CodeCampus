@@ -32,7 +32,7 @@ function Flashcards() {
 
     useEffect(() => {
         document.title = 'Flashcards – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const totalCards = useMemo(() => cards.length, [cards.length]);

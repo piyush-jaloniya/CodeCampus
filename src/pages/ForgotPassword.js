@@ -12,7 +12,7 @@ function ForgotPassword() {
 
     useEffect(() => {
         document.title = 'Forgot Password – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const queueRequest = (targetEmail) => {

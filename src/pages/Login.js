@@ -14,7 +14,7 @@ function Login({ onLogin }) {
 
     useEffect(() => {
         document.title = 'Login – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const handleChange = (e) => {

@@ -19,7 +19,7 @@ function Courses({ onWishlist, wishlist, user }) {
 
     useEffect(() => {
         document.title = 'Courses – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     useEffect(() => {

@@ -17,7 +17,7 @@ function Contact() {
 
     useEffect(() => {
         document.title = 'Contact Us – CodeCampus';
-        return () => { document.title = 'CodeCampus'; };
+
     }, []);
 
     const handleChange = (e) => {

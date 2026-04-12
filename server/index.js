@@ -44,14 +44,13 @@ function readSessions() {
 }
 
 function writeSessions(sessions) {
-    try {
-        if (!fs.existsSync(DATA_DIR)) {
-            fs.mkdirSync(DATA_DIR, { recursive: true });
-        }
-        fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf8');
-    } catch {
-        // Non-fatal: sessions will still work in-memory for this process lifetime.
+    const payload = JSON.stringify(sessions, null, 2);
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
     }
+    fs.promises.writeFile(SESSIONS_FILE, payload, 'utf8').catch(() => {
+        // Non-fatal: sessions will still work in-memory for this process lifetime.
+    });
 }
 
 function loadSessionsFromFile() {
