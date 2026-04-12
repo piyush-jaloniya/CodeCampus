@@ -16,6 +16,10 @@ html.dark {
     --bg-color: var(--bg-primary);
     --text-color: var(--text-primary);
     --card-bg: var(--bg-card);
+    --heatmap-empty: #1a1f2e;
+    --heatmap-lvl1: #1a4a3a;
+    --heatmap-lvl2: #1d7a52;
+    --heatmap-lvl3: #06d6a0;
 }
 
 html.light {
@@ -35,6 +39,10 @@ html.light {
     --bg-color: var(--bg-primary);
     --text-color: var(--text-primary);
     --card-bg: var(--bg-card);
+    --heatmap-empty: #e2e8f0;
+    --heatmap-lvl1: #bbf7d0;
+    --heatmap-lvl2: #4ade80;
+    --heatmap-lvl3: #16a34a;
 }
 
 *,
@@ -414,12 +422,46 @@ html.dark .col-md-4 {
     margin-bottom: 2rem;
 }
 
+/* Home feature cards */
+.home-feature-card {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+/* Home CTA section */
+.home-cta-section {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
 /* Contact page styles */
 .contact-info {
     background: var(--card-bg);
     padding: 2rem;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.contact-icon-wrap {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
 }
 
 html.dark .bg-light {
@@ -808,23 +850,23 @@ html.dark .breadcrumb-item a {
     width: 14px;
     height: 14px;
     border-radius: 3px;
-    background: #1a1f2e;
+    background: var(--heatmap-empty, #1a1f2e);
 }
 
 .heatmap-cell.lvl-0 {
-    background: #1a1f2e;
+    background: var(--heatmap-empty, #1a1f2e);
 }
 
 .heatmap-cell.lvl-1 {
-    background: #1a4a3a;
+    background: var(--heatmap-lvl1, #1a4a3a);
 }
 
 .heatmap-cell.lvl-2 {
-    background: #1d7a52;
+    background: var(--heatmap-lvl2, #1d7a52);
 }
 
 .heatmap-cell.lvl-3 {
-    background: #06d6a0;
+    background: var(--heatmap-lvl3, #06d6a0);
 }
 
 html.dark .onboarding-card {
@@ -1100,6 +1142,39 @@ html.dark .progress-readout {
 .form-control {
     border-radius: 8px;
     padding: 0.75rem 1rem;
+}
+
+/* Auth pages */
+.auth-page-wrapper {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: radial-gradient(ellipse at 60% 20%, var(--accent-bg) 0%, transparent 60%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+
+.auth-card-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--text-primary);
+}
+
+.auth-card-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.75rem;
 }
 
 /* Responsive adjustments */

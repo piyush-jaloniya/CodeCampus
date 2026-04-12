@@ -19,10 +19,12 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
             { path: '/dashboard', label: 'Dashboard' },
             { path: '/courses', label: 'Courses' },
             { path: '/flashcards', label: 'Flashcards' },
-            { path: '/analytics', label: 'Analytics' }
+            { path: '/analytics', label: 'Analytics' },
+            { path: '/contact', label: 'Contact' }
         ]
         : [
-            { path: '/', label: 'Home' }
+            { path: '/', label: 'Home' },
+            { path: '/contact', label: 'Contact' }
         ];
 
     return (
@@ -55,27 +57,27 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
                         ))}
                     </Nav>
                     <Nav className="nav-action-links">
+                        <button
+                            onClick={toggleTheme}
+                            aria-label="Toggle theme"
+                            style={{
+                                background: 'var(--bg-hover)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                padding: '6px 10px',
+                                cursor: 'pointer',
+                                color: 'var(--text-secondary)',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {theme === 'dark' ? '☀ Light' : '🌙 Dark'}
+                        </button>
                         {isLoggedIn ? (
                             <>
-                                <button
-                                    onClick={toggleTheme}
-                                    aria-label="Toggle theme"
-                                    style={{
-                                        background: 'var(--bg-hover)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        cursor: 'pointer',
-                                        color: 'var(--text-secondary)',
-                                        fontSize: '14px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    {theme === 'dark' ? '☀ Light' : '🌙 Dark'}
-                                </button>
                                 <Nav.Link
                                     onClick={onToggleAccessibility}
                                     title="Toggle Accessibility Mode"

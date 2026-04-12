@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Form, Button, Alert, Row, Col } from 'react-bootstrap';
+import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { loginUser } from '../utils/auth';
@@ -57,55 +57,58 @@ function Login({ onLogin }) {
     };
 
     return (
-        <Container className="mt-4" style={{ maxWidth: '500px' }}>
-            <h2 className="text-center mb-4">Login</h2>
-            {loginError && <Alert variant="danger">{loginError}</Alert>}
-            <Form onSubmit={handleSubmit}>
-                <Form.Group controlId="formEmail" className="mb-3">
-                    <Form.Label>Email address</Form.Label>
-                    <Form.Control
-                        type="email"
-                        name="email"
-                        placeholder="Enter email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        isInvalid={!!errors.email}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                        {errors.email}
-                    </Form.Control.Feedback>
-                </Form.Group>
+        <div className="auth-page-wrapper">
+            <div className="auth-card">
+                <h2 className="auth-card-title">Welcome back</h2>
+                <p className="auth-card-subtitle">Sign in to continue learning</p>
+                {loginError && <Alert variant="danger">{loginError}</Alert>}
+                <Form onSubmit={handleSubmit}>
+                    <Form.Group controlId="formEmail" className="mb-3">
+                        <Form.Label>Email address</Form.Label>
+                        <Form.Control
+                            type="email"
+                            name="email"
+                            placeholder="Enter email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            isInvalid={!!errors.email}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.email}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
-                <Form.Group controlId="formPassword" className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                        type="password"
-                        name="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        isInvalid={!!errors.password}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                        {errors.password}
-                    </Form.Control.Feedback>
-                </Form.Group>
+                    <Form.Group controlId="formPassword" className="mb-3">
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control
+                            type="password"
+                            name="password"
+                            placeholder="Password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            isInvalid={!!errors.password}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {errors.password}
+                        </Form.Control.Feedback>
+                    </Form.Group>
 
-                <Button variant="primary" type="submit" className="w-100 mb-3">
-                    Login
-                </Button>
+                    <Button variant="primary" type="submit" className="w-100 mb-3">
+                        Login
+                    </Button>
 
-                <div className="text-center mb-3">
-                    <Link to="/forgot-password">Forgot password?</Link>
-                </div>
+                    <div className="text-center mb-3">
+                        <Link to="/forgot-password">Forgot password?</Link>
+                    </div>
 
-                <Row className="text-center">
-                    <Col>
-                        Don't have an account? <Link to="/signup">Signup</Link>
-                    </Col>
-                </Row>
-            </Form>
-        </Container>
+                    <Row className="text-center">
+                        <Col>
+                            Don&apos;t have an account? <Link to="/signup">Signup</Link>
+                        </Col>
+                    </Row>
+                </Form>
+            </div>
+        </div>
     );
 }
 

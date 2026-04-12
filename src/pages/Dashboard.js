@@ -237,7 +237,7 @@ function Dashboard({ user, wishlist }) {
 
     return (
         <Container className="mt-4 dashboard-page">
-            <h2 className="mb-4 dashboard-greeting">Dashboard</h2>
+            <h2 className="mb-4 dashboard-greeting">Welcome back, {user?.username || 'Learner'}! 👋</h2>
             {user ? (
                 <>
                     <Row className="g-4 mb-4">

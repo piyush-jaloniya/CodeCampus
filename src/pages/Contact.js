@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Card, Form, Button } from 'react-bootstrap';
+import { Container, Card, Form, Button, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 function Contact() {
@@ -89,25 +89,48 @@ function Contact() {
     };
 
     return (
-        <Container className="mt-4">
-            <h2 className="text-center mb-4">Contact Us</h2>
-            <div className="row">
-                <div className="col-md-6 mb-4">
-                    <Card className="contact-info">
+        <Container className="mt-4 pb-5">
+            <h2 className="text-center mb-2">Contact Us</h2>
+            <p className="text-center text-muted mb-4">We&apos;d love to hear from you</p>
+            <Row className="g-4">
+                <Col md={5}>
+                    <Card className="contact-info h-100">
                         <Card.Body>
-                            <Card.Title>Get in Touch</Card.Title>
-                            <Card.Text>
-                                <p><i className="bi bi-envelope-fill me-2"></i> Email: {supportEmail}</p>
-                                <p><i className="bi bi-telephone-fill me-2"></i> Phone: {supportPhone}</p>
-                                <p><i className="bi bi-geo-alt-fill me-2"></i> Address: {supportAddress}</p>
-                            </Card.Text>
+                            <Card.Title className="mb-4">Get in Touch</Card.Title>
+                            <div className="d-flex align-items-center mb-3 gap-3">
+                                <div className="contact-icon-wrap">
+                                    <i className="bi bi-envelope-fill"></i>
+                                </div>
+                                <div>
+                                    <div className="small text-muted">Email</div>
+                                    <div>{supportEmail}</div>
+                                </div>
+                            </div>
+                            <div className="d-flex align-items-center mb-3 gap-3">
+                                <div className="contact-icon-wrap">
+                                    <i className="bi bi-telephone-fill"></i>
+                                </div>
+                                <div>
+                                    <div className="small text-muted">Phone</div>
+                                    <div>{supportPhone}</div>
+                                </div>
+                            </div>
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="contact-icon-wrap">
+                                    <i className="bi bi-geo-alt-fill"></i>
+                                </div>
+                                <div>
+                                    <div className="small text-muted">Address</div>
+                                    <div>{supportAddress}</div>
+                                </div>
+                            </div>
                         </Card.Body>
                     </Card>
-                </div>
-                <div className="col-md-6">
-                    <Card>
+                </Col>
+                <Col md={7}>
+                    <Card className="h-100">
                         <Card.Body>
-                            <Card.Title>Send us a Message</Card.Title>
+                            <Card.Title className="mb-4">Send us a Message</Card.Title>
                             <Form onSubmit={handleSubmit}>
                                 <Form.Group className="mb-3" controlId="formName">
                                     <Form.Label>Name</Form.Label>
@@ -155,6 +178,7 @@ function Contact() {
                                 <Button
                                     variant="primary"
                                     type="submit"
+                                    className="w-100"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? 'Sending...' : 'Send Message'}
@@ -162,8 +186,8 @@ function Contact() {
                             </Form>
                         </Card.Body>
                     </Card>
-                </div>
-            </div>
+                </Col>
+            </Row>
         </Container>
     );
 }

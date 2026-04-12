@@ -63,7 +63,7 @@ function CourseCard({ courseId, course, courseSlug, description, link, image, on
     };
 
     return (
-        <Card style={{ width: '20rem' }} className="m-3 h-100">
+        <Card className="h-100">
             <Card.Img variant="top" src={image} style={{ height: '180px', objectFit: 'cover' }} />
             <Card.Body className="d-flex flex-column">
                 <Card.Title>{course}</Card.Title>
@@ -72,7 +72,7 @@ function CourseCard({ courseId, course, courseSlug, description, link, image, on
                 {rating && (
                     <div className="mb-2">
                         <small className="text-warning">
-                            {renderStars(rating)} <span className="text-dark fw-bold">{rating}</span>
+                            {renderStars(rating)} <span className="fw-bold">{rating}</span>
                             <span className="text-muted"> ({reviews} reviews)</span>
                         </small>
                     </div>

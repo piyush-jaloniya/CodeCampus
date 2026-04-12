@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -85,46 +85,49 @@ function ForgotPassword() {
     };
 
     return (
-        <Container className="mt-4" style={{ maxWidth: '520px' }}>
-            <h2 className="text-center mb-4">Forgot Password</h2>
-            {submitted ? (
-                <>
-                    <Alert variant="success">
-                        We have sent reset instructions to <strong>{email}</strong>.
-                    </Alert>
-                    <Button
-                        variant="outline-primary"
-                        className="w-100 mb-2"
-                        onClick={handleResend}
-                        disabled={resendCooldown > 0}
-                    >
-                        {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend email'}
-                    </Button>
-                </>
-            ) : (
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group className="mb-3" controlId="forgotPasswordEmail">
-                        <Form.Label>Email address</Form.Label>
-                        <Form.Control
-                            type="email"
-                            value={email}
-                            onChange={(event) => setEmail(event.target.value)}
-                            placeholder="Enter your account email"
-                            isInvalid={Boolean(error)}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {error}
-                        </Form.Control.Feedback>
-                    </Form.Group>
-                    <Button type="submit" className="w-100" variant="primary">
-                        Send Reset Link
-                    </Button>
-                </Form>
-            )}
-            <div className="text-center mt-3">
-                Back to <Link to="/login">Login</Link>
+        <div className="auth-page-wrapper">
+            <div className="auth-card">
+                <h2 className="auth-card-title">Forgot Password?</h2>
+                <p className="auth-card-subtitle">Enter your email and we&apos;ll send you a reset link</p>
+                {submitted ? (
+                    <>
+                        <Alert variant="success">
+                            We have sent reset instructions to <strong>{email}</strong>.
+                        </Alert>
+                        <Button
+                            variant="outline-primary"
+                            className="w-100 mb-2"
+                            onClick={handleResend}
+                            disabled={resendCooldown > 0}
+                        >
+                            {resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : 'Resend email'}
+                        </Button>
+                    </>
+                ) : (
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group className="mb-3" controlId="forgotPasswordEmail">
+                            <Form.Label>Email address</Form.Label>
+                            <Form.Control
+                                type="email"
+                                value={email}
+                                onChange={(event) => setEmail(event.target.value)}
+                                placeholder="Enter your account email"
+                                isInvalid={Boolean(error)}
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {error}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+                        <Button type="submit" className="w-100" variant="primary">
+                            Send Reset Link
+                        </Button>
+                    </Form>
+                )}
+                <div className="text-center mt-3">
+                    Back to <Link to="/login">Login</Link>
+                </div>
             </div>
-        </Container>
+        </div>
     );
 }
 
