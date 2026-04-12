@@ -10,6 +10,11 @@ function ForgotPassword() {
     const [resendCooldown, setResendCooldown] = useState(0);
     const cooldownIntervalRef = useRef(null);
 
+    useEffect(() => {
+        document.title = 'Forgot Password – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
+
     const queueRequest = (targetEmail) => {
         let requests = [];
         try {

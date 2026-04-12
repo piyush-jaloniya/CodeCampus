@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Card, Form, Button, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
@@ -14,6 +14,11 @@ function Contact() {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        document.title = 'Contact Us – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;

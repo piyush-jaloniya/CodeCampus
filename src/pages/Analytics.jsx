@@ -72,6 +72,11 @@ function Analytics() {
     const [insightText, setInsightText] = useState('');
     const [refreshKey, setRefreshKey] = useState(0);
 
+    React.useEffect(() => {
+        document.title = 'Analytics – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
+
     const chartTooltipStyle = {
         background: theme === 'dark' ? '#1a2235' : '#ffffff',
         border: `1px solid ${theme === 'dark' ? 'rgba(79,142,247,0.3)' : 'rgba(0,0,0,0.12)'}`,

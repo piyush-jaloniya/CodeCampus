@@ -16,6 +16,7 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
 
     const primaryLinks = isLoggedIn
         ? [
+            { path: '/', label: 'Home' },
             { path: '/dashboard', label: 'Dashboard' },
             { path: '/courses', label: 'Courses' },
             { path: '/flashcards', label: 'Flashcards' },

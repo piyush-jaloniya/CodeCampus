@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -11,6 +11,11 @@ function Login({ onLogin }) {
     });
     const [errors, setErrors] = useState({});
     const [loginError, setLoginError] = useState('');
+
+    useEffect(() => {
+        document.title = 'Login – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -72,6 +77,7 @@ function Login({ onLogin }) {
                             value={formData.email}
                             onChange={handleChange}
                             isInvalid={!!errors.email}
+                            autoComplete="email"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.email}
@@ -87,6 +93,7 @@ function Login({ onLogin }) {
                             value={formData.password}
                             onChange={handleChange}
                             isInvalid={!!errors.password}
+                            autoComplete="current-password"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.password}

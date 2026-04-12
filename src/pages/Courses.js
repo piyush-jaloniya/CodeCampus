@@ -18,6 +18,11 @@ function Courses({ onWishlist, wishlist, user }) {
     const [quizCourse, setQuizCourse] = useState(null);
 
     useEffect(() => {
+        document.title = 'Courses – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
+
+    useEffect(() => {
         const timer = setTimeout(() => {
             setCourses(getCourses());
             setIsLoading(false);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Row, Col, ProgressBar } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -14,6 +14,11 @@ function Signup({ onSignup }) {
     const [errors, setErrors] = useState({});
     const [submitError, setSubmitError] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        document.title = 'Sign Up – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
 
     const getPasswordStrength = (password) => {
         if (!password) {
@@ -107,6 +112,7 @@ function Signup({ onSignup }) {
                             value={formData.username}
                             onChange={handleChange}
                             isInvalid={!!errors.username}
+                            autoComplete="username"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.username}
@@ -122,6 +128,7 @@ function Signup({ onSignup }) {
                             value={formData.email}
                             onChange={handleChange}
                             isInvalid={!!errors.email}
+                            autoComplete="email"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.email}
@@ -137,6 +144,7 @@ function Signup({ onSignup }) {
                             value={formData.password}
                             onChange={handleChange}
                             isInvalid={!!errors.password}
+                            autoComplete="new-password"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.password}
@@ -166,6 +174,7 @@ function Signup({ onSignup }) {
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             isInvalid={!!errors.confirmPassword}
+                            autoComplete="new-password"
                         />
                         <Form.Control.Feedback type="invalid">
                             {errors.confirmPassword}

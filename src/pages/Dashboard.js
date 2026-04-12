@@ -129,6 +129,11 @@ function Dashboard({ user, wishlist }) {
     });
     const [roadmapLoading, setRoadmapLoading] = useState(false);
     const wishlistCount = wishlist.length;
+
+    useEffect(() => {
+        document.title = 'Dashboard – CodeCampus';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
     let recommendedPath = [];
     try {
         recommendedPath = JSON.parse(localStorage.getItem('recommendedPath') || '[]');

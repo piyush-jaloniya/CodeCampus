@@ -12,6 +12,8 @@ const geminiApiKey = process.env.GEMINI_API_KEY;
 
 const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const GEMINI_WINDOW_MS = 5 * 60 * 1000;
 const GEMINI_MAX_REQUESTS = 20;
 
@@ -28,6 +30,43 @@ function ensureUsersFile() {
 
     if (!fs.existsSync(USERS_FILE)) {
         fs.writeFileSync(USERS_FILE, '[]', 'utf8');
+    }
+}
+
+function readSessions() {
+    try {
+        const raw = fs.readFileSync(SESSIONS_FILE, 'utf8');
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function writeSessions(sessions) {
+    try {
+        if (!fs.existsSync(DATA_DIR)) {
+            fs.mkdirSync(DATA_DIR, { recursive: true });
+        }
+        fs.writeFileSync(SESSIONS_FILE, JSON.stringify(sessions, null, 2), 'utf8');
+    } catch {
+        // Non-fatal: sessions will still work in-memory for this process lifetime.
+    }
+}
+
+function loadSessionsFromFile() {
+    const now = Date.now();
+    const stored = readSessions();
+    let changed = false;
+    for (const [token, session] of Object.entries(stored)) {
+        if (session?.email && now - (session.createdAt || 0) < SESSION_TTL_MS) {
+            sessionStore.set(token, session);
+        } else {
+            changed = true;
+        }
+    }
+    if (changed) {
+        writeSessions(Object.fromEntries(sessionStore));
     }
 }
 
@@ -77,10 +116,9 @@ function verifyPassword(password, storedHash) {
 
 function createSession(userEmail) {
     const sessionToken = crypto.randomUUID();
-    sessionStore.set(sessionToken, {
-        email: userEmail,
-        createdAt: Date.now()
-    });
+    const session = { email: userEmail, createdAt: Date.now() };
+    sessionStore.set(sessionToken, session);
+    writeSessions(Object.fromEntries(sessionStore));
     return sessionToken;
 }
 
@@ -119,11 +157,18 @@ function requireAuth(request, response, next) {
         return response.status(401).json({ error: 'Invalid session.' });
     }
 
+    if (Date.now() - (session.createdAt || 0) >= SESSION_TTL_MS) {
+        sessionStore.delete(sessionToken);
+        writeSessions(Object.fromEntries(sessionStore));
+        return response.status(401).json({ error: 'Session expired. Please log in again.' });
+    }
+
     const users = readUsers();
     const user = users.find((entry) => entry.email === session.email);
 
     if (!user) {
         sessionStore.delete(sessionToken);
+        writeSessions(Object.fromEntries(sessionStore));
         return response.status(401).json({ error: 'Account not found.' });
     }
 
@@ -223,6 +268,7 @@ app.get('/api/auth/session', requireAuth, (request, response) => {
 app.post('/api/auth/logout', requireAuth, (request, response) => {
     sessionStore.delete(request.auth.sessionToken);
     geminiUsageStore.delete(request.auth.sessionToken);
+    writeSessions(Object.fromEntries(sessionStore));
     response.json({ ok: true });
 });
 
@@ -294,5 +340,6 @@ if (process.env.NODE_ENV === 'production') {
 
 app.listen(PORT, () => {
     ensureUsersFile();
+    loadSessionsFromFile();
     console.log(`CodeCampus server listening on http://localhost:${PORT}`);
 });

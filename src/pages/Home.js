@@ -9,6 +9,11 @@ function Home() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        document.title = 'CodeCampus – Learn. Build. Grow.';
+        return () => { document.title = 'CodeCampus'; };
+    }, []);
+
+    useEffect(() => {
         const timer = setTimeout(() => {
             setTrendingCourses(getTrendingCourses(3));
             setIsLoading(false);
@@ -59,7 +64,7 @@ function Home() {
                     <h1 className="display-4 fw-bold mb-4">Welcome to CodeCampus</h1>
                     <p className="lead mb-4">Your hub for Computer Science courses and learning resources!</p>
                     <div className="d-flex flex-column flex-md-row gap-2 justify-content-center">
-                        <Button as={Link} to="/courses" variant="primary" size="lg" className="me-md-2 mb-2 mb-md-0">
+                        <Button as={Link} to="/login" variant="primary" size="lg" className="me-md-2 mb-2 mb-md-0">
                             Browse Courses
                         </Button>
                         <Button as={Link} to="/signup" variant="outline-light" size="lg">
@@ -144,7 +149,7 @@ function Home() {
                                             <Badge bg={getDifficultyColor(course.difficulty)}>{course.difficulty}</Badge>
                                         </div>
                                         <p className="text-muted small flex-grow-1">Enroll now to get started with this trending course</p>
-                                        <Button as={Link} to="/courses" variant="primary" className="align-self-start">
+                                        <Button as={Link} to="/login" variant="primary" className="align-self-start">
                                             Learn More
                                         </Button>
                                     </Card.Body>
