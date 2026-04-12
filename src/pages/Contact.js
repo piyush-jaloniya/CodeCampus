@@ -91,7 +91,7 @@ function Contact() {
     return (
         <Container className="mt-4 pb-5">
             <h2 className="text-center mb-2">Contact Us</h2>
-            <p className="text-center text-muted mb-4">We&apos;d love to hear from you</p>
+            <p className="text-center text-muted mb-4">We'd love to hear from you</p>
             <Row className="g-4">
                 <Col md={5}>
                     <Card className="contact-info h-100">

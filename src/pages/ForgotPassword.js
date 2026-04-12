@@ -88,7 +88,7 @@ function ForgotPassword() {
         <div className="auth-page-wrapper">
             <div className="auth-card">
                 <h2 className="auth-card-title">Forgot Password?</h2>
-                <p className="auth-card-subtitle">Enter your email and we&apos;ll send you a reset link</p>
+                <p className="auth-card-subtitle">Enter your email and we'll send you a reset link</p>
                 {submitted ? (
                     <>
                         <Alert variant="success">
