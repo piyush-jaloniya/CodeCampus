@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -16,6 +16,7 @@ import Flashcards from './pages/Flashcards';
 import Analytics from './pages/Analytics';
 import NotFound from './pages/NotFound';
 import OnboardingQuiz from './components/OnboardingQuiz';
+import ConfirmModal from './components/ConfirmModal';
 import { clearAuthenticatedUser, getAuthenticatedUser } from './utils/auth';
 import './App.css';
 
@@ -32,6 +33,7 @@ function App() {
     const [authReady, setAuthReady] = useState(false);
     const [wishlist, setWishlist] = useState([]);
     const [accessibilityMode, setAccessibilityMode] = useState(() => localStorage.getItem('accessibilityMode') === 'true');
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -98,11 +100,14 @@ function App() {
         setAuthReady(true);
     };
 
-    const handleLogout = async () => {
-        if (!window.confirm('Are you sure you want to logout?')) {
-            return;
-        }
+    // Step 1: request logout (shows branded modal)
+    const handleLogout = () => {
+        setShowLogoutModal(true);
+    };
 
+    // Step 2: user confirmed logout
+    const handleLogoutConfirmed = async () => {
+        setShowLogoutModal(false);
         setUser(null);
         setAuthReady(true);
         await clearAuthenticatedUser();
@@ -113,17 +118,19 @@ function App() {
 
     const handleWishlist = (course) => {
         if (!user) {
-            if (window.confirm('You need to login to save courses. Go to login page?')) {
-                navigate('/login');
-            }
+            toast.info('Create a free account to save courses to your wishlist.', {
+                toastId: 'wishlist-auth-prompt'
+            });
             return;
         }
 
         let updatedWishlist;
         if (wishlist.includes(course)) {
             updatedWishlist = wishlist.filter(item => item !== course);
+            toast.success(`Removed "${course}" from your wishlist.`);
         } else {
             updatedWishlist = [...wishlist, course];
+            toast.success(`Saved "${course}" to your wishlist!`);
         }
         setWishlist(updatedWishlist);
         localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
@@ -152,18 +159,28 @@ function App() {
                 draggable
                 pauseOnHover
             />
+            {/* Branded logout confirmation modal replacing window.confirm() */}
+            <ConfirmModal
+                show={showLogoutModal}
+                icon="👋"
+                title="Sign out?"
+                description={`You are signed in as ${user?.email || 'your account'}. You can sign back in at any time.`}
+                confirmLabel="Sign Out"
+                cancelLabel="Stay"
+                confirmVariant="danger"
+                onConfirm={handleLogoutConfirmed}
+                onCancel={() => setShowLogoutModal(false)}
+            />
             <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Home user={user} authReady={authReady} />} />
                 <Route
                     path="/courses"
                     element={
-                        <PrivateRoute user={user} authReady={authReady}>
-                            <Courses
-                                onWishlist={handleWishlist}
-                                wishlist={wishlist}
-                                user={user}  // Pass user to Courses
-                            />
-                        </PrivateRoute>
+                        <Courses
+                            onWishlist={handleWishlist}
+                            wishlist={wishlist}
+                            user={user}
+                        />
                     }
                 />
                 <Route path="/contact" element={<Contact />} />

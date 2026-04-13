@@ -4,9 +4,16 @@ import { Link } from 'react-router-dom';
 import { getTrendingCourses } from '../services/courseService';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
-function Home() {
+function Home({ user, authReady = true }) {
     const [trendingCourses, setTrendingCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const isLoggedIn = Boolean(user);
+    const showGuestCtas = authReady && !isLoggedIn;
+
+    useEffect(() => {
+        document.title = 'CodeCampus – Learn. Build. Grow.';
+
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -46,75 +53,114 @@ function Home() {
 
     return (
         <>
-            <div
-                className="hero-section text-white text-center py-5"
-                style={{
-                    backgroundImage: 'linear-gradient(rgba(61, 61, 61, 0.7), rgba(0, 0, 0, 0.7)), url(https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80)',
-                    backgroundPosition: 'center'
-                }}
-            >
-                <Container>
-                    <h1 className="display-4 fw-bold mb-4">Welcome to CodeCampus</h1>
-                    <p className="lead mb-4">Your hub for Computer Science courses and learning resources!</p>
-                    <div className="d-flex flex-column flex-md-row gap-2 justify-content-center">
-                        <Button as={Link} to="/courses" variant="primary" size="lg" className="me-md-2 mb-2 mb-md-0">
-                            Browse Courses
-                        </Button>
-                        <Button as={Link} to="/signup" variant="outline-light" size="lg">
-                            Get Started
-                        </Button>
+            {/* Hero Section */}
+            <div className="hero-section text-center">
+                <Container style={{ position: 'relative', zIndex: 1 }}>
+                    <p style={{
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--accent)',
+                        marginBottom: 'var(--sp-4)'
+                    }}>
+                        ✨ AI-Powered Learning
+                    </p>
+                    <h1 className="display-4 fw-bold mb-3" style={{ letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+                        Master Computer Science,
+                        <br />
+                        <span style={{ color: 'var(--accent)' }}>at your own pace.</span>
+                    </h1>
+                    <p className="lead mb-5" style={{ color: 'var(--text-secondary)', maxWidth: '540px', margin: '0 auto var(--sp-8)' }}>
+                        Curated CS courses, AI-generated study plans, and smart flashcards — all in one place.
+                    </p>
+                    <div className="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                        {isLoggedIn ? (
+                            // Logged-in CTAs
+                            <>
+                                <Button as={Link} to="/dashboard" variant="primary" size="lg">
+                                    Go to Dashboard →
+                                </Button>
+                                <Button as={Link} to="/courses" variant="outline-secondary" size="lg">
+                                    Browse Courses
+                                </Button>
+                            </>
+                        ) : showGuestCtas ? (
+                            // Guest CTAs
+                            <>
+                                <Button as={Link} to="/courses" variant="primary" size="lg">
+                                    Browse Courses →
+                                </Button>
+                                <Button as={Link} to="/signup" variant="outline-secondary" size="lg">
+                                    Create Free Account
+                                </Button>
+                            </>
+                        ) : (
+                            <Button as={Link} to="/courses" variant="primary" size="lg">
+                                Browse Courses →
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Trust badges */}
+                    <div className="hero-trust-badges">
+                        <span className="trust-badge"><span>📚</span> 6 Curated Courses</span>
+                        <span className="trust-badge"><span>🤖</span> AI Study Companion</span>
+                        <span className="trust-badge"><span>🎓</span> Always Free</span>
+                        <span className="trust-badge"><span>⚡</span> No Setup Required</span>
                     </div>
                 </Container>
             </div>
 
-            <Container className="my-5">
-                <h2 className="text-center mb-5">Why Choose CodeCampus?</h2>
+            {/* Why CodeCampus — AI Feature Highlights */}
+            <Container className="my-5 py-3">
+                <h2 className="text-center mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Why CodeCampus?</h2>
+                <p className="text-center mb-5" style={{ color: 'var(--text-secondary)' }}>Everything you need to learn smarter, not harder.</p>
                 <Row className="g-4">
                     <Col md={4}>
-                        <div className="p-4 bg-white rounded shadow-sm text-center h-100">
-                            <img
-                                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1472&q=80"
-                                alt="Coding"
-                                className="img-fluid rounded mb-3"
-                                style={{ height: '200px', width: '100%', objectFit: 'cover' }}
-                            />
-                            <h3>Expert Courses</h3>
-                            <p>Learn from industry professionals with real-world experience.</p>
+                        <div className="home-feature-card p-4 rounded-4 text-center h-100">
+                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🤖</div>
+                            <h3 className="h5 fw-bold mb-2">AI Study Companion</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Ask questions about any topic while watching lectures. Get instant explanations from Gemini AI.</p>
                         </div>
                     </Col>
                     <Col md={4}>
-                        <div className="p-4 bg-white rounded shadow-sm text-center h-100">
-                            <img
-                                src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
-                                alt="Hands-on Learning"
-                                className="img-fluid rounded mb-3"
-                                style={{ height: '200px', width: '100%', objectFit: 'cover' }}
-                            />
-                            <h3>Hands-on Learning</h3>
-                            <p>Practical exercises and projects to reinforce your knowledge.</p>
+                        <div className="home-feature-card p-4 rounded-4 text-center h-100">
+                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🗺️</div>
+                            <h3 className="h5 fw-bold mb-2">Personalized Roadmap</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Take a 2-minute quiz and get an AI-curated learning path tailored to your goals and skill level.</p>
                         </div>
                     </Col>
                     <Col md={4}>
-                        <div className="p-4 bg-white rounded shadow-sm text-center h-100">
-                            <img
-                                src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1522&q=80"
-                                alt="Flexible Schedule"
-                                className="img-fluid rounded mb-3"
-                                style={{ height: '200px', width: '100%', objectFit: 'cover' }}
-                            />
-                            <h3>Flexible Schedule</h3>
-                            <p>Learn at your own pace, anytime, anywhere.</p>
+                        <div className="home-feature-card p-4 rounded-4 text-center h-100">
+                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🏗️</div>
+                            <h3 className="h5 fw-bold mb-2">Smart Flashcards</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Save any term from AI notes as a flashcard. Generate AI explanations on the back with one click.</p>
                         </div>
                     </Col>
                 </Row>
             </Container>
 
-            <div className="bg-light py-5">
+            {/* CTA Banner */}
+            <div className="home-cta-section py-5">
                 <Container className="text-center">
-                    <h2 className="mb-4">Ready to Start Learning?</h2>
-                    <Button as={Link} to="/signup" variant="primary" size="lg">
-                        Join Now for Free
-                    </Button>
+                    {user ? (
+                        <>
+                            <h2 className="mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Ready to continue learning?</h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>Your roadmap, flashcards, and progress are waiting.</p>
+                            <Button as={Link} to="/dashboard" variant="primary" size="lg">
+                                Go to Dashboard →
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Build your personalized path in 2 minutes.</h2>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>Take a quick quiz. Get a roadmap. Start learning today.</p>
+                            <Button as={Link} to="/signup" variant="primary" size="lg">
+                                Create Free Account →
+                            </Button>
+                        </>
+                    )}
                 </Container>
             </div>
 
@@ -132,7 +178,7 @@ function Home() {
                                         <Card.Title>{course.name}</Card.Title>
                                         <div className="mb-2">
                                             <small className="text-warning">
-                                                {renderStars(course.rating)} <span className="text-dark fw-bold">{course.rating}</span>
+                                                {renderStars(course.rating)} <span className="fw-bold">{course.rating}</span>
                                                 <span className="text-muted"> ({course.reviews} reviews)</span>
                                             </small>
                                         </div>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Container, Spinner } from 'react-bootstrap';
 import { askGemini } from '../utils/geminiApi';
 
@@ -29,6 +29,11 @@ function Flashcards() {
     const [flipped, setFlipped] = useState({});
     const [answers, setAnswers] = useState({});
     const [loadingAnswerIds, setLoadingAnswerIds] = useState({});
+
+    useEffect(() => {
+        document.title = 'Flashcards – CodeCampus';
+
+    }, []);
 
     const totalCards = useMemo(() => cards.length, [cards.length]);
 

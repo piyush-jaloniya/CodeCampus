@@ -17,21 +17,9 @@ import {
 import { askGemini } from '../utils/geminiApi';
 import { getCourses } from '../services/courseService';
 import { formatLocalDateKey, getStudyLog } from '../utils/studyActivity';
+import { useTheme } from '../context/ThemeContext';
 
 const chartLabelColor = 'var(--text-secondary)';
-const chartGridColor = 'rgba(255,255,255,0.05)';
-const chartTooltipStyle = {
-    background: '#1a2235',
-    border: '1px solid rgba(79,142,247,0.3)',
-    color: 'var(--text-primary)',
-    fontFamily: 'inherit'
-};
-const sectionCardStyle = {
-    background: 'var(--bg-secondary)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '12px',
-    padding: '1.5rem'
-};
 const pieColors = ['#4f8ef7', '#7c3aed', '#06d6a0', '#f7a525', '#34d399', '#fb7185', '#38bdf8'];
 
 function getLocalStorageByPrefix(prefix) {
@@ -79,9 +67,33 @@ function getCurrentStreak(studyDates) {
 }
 
 function Analytics() {
+    const { theme } = useTheme();
     const [insightLoading, setInsightLoading] = useState(false);
     const [insightText, setInsightText] = useState('');
     const [refreshKey, setRefreshKey] = useState(0);
+
+    React.useEffect(() => {
+        document.title = 'Analytics – CodeCampus';
+
+    }, []);
+
+    const chartTooltipStyle = {
+        background: theme === 'dark' ? '#1a2235' : '#ffffff',
+        border: `1px solid ${theme === 'dark' ? 'rgba(79,142,247,0.3)' : 'rgba(0,0,0,0.12)'}`,
+        color: 'var(--text-primary)',
+        fontFamily: 'inherit',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+    };
+
+    const chartGridColor = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+
+    const sectionCardStyle = {
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '12px',
+        padding: '1.5rem'
+    };
 
     React.useEffect(() => {
         const refreshAnalytics = () => setRefreshKey((previous) => previous + 1);

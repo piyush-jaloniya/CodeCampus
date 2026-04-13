@@ -50,7 +50,7 @@ function AISummaryButton({ courseId, courseName, category }) {
         <div className="w-100 mt-2">
             <button
                 type="button"
-                className="btn btn-outline-dark btn-sm w-100"
+                className="btn btn-sm w-100 ai-summary-trigger"
                 onClick={handleToggleSummary}
                 disabled={isLoading}
             >

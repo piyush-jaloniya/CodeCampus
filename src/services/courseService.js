@@ -150,14 +150,31 @@ export function getYoutubeEmbedUrl(url) {
     }
 }
 
-export function getCourses() {
+export function getUserCourseRating(courseName, userId = '') {
+    const normalizedUserId = typeof userId === 'string' ? userId.trim() : '';
+    if (!normalizedUserId) {
+        return null;
+    }
+
     const ratings = readRatingsStore();
+    const courseRatings = ratings[courseName];
+    const value = courseRatings?.userRatings?.[normalizedUserId];
+    return typeof value === 'number' ? value : null;
+}
+
+export function getCourses(userId = '') {
+    const ratings = readRatingsStore();
+    const normalizedUserId = typeof userId === 'string' ? userId.trim() : '';
+
     return courseCatalog.map((course) => {
         const fallbackVideoUrl = Array.isArray(course.videos) && course.videos.length > 0
             ? `https://www.youtube.com/watch?v=${course.videos[0].videoId}`
             : null;
         const sourceUrl = course.youtubeUrl || course.link || fallbackVideoUrl;
         const ratingInfo = ratings[course.name];
+        const userRating = normalizedUserId && ratingInfo?.userRatings
+            ? ratingInfo.userRatings[normalizedUserId] ?? null
+            : null;
         return {
             ...course,
             youtubeUrl: course.youtubeUrl || sourceUrl,
@@ -167,7 +184,8 @@ export function getCourses() {
             title: course.name,
             embedUrl: getYoutubeEmbedUrl(sourceUrl),
             rating: ratingInfo ? Number(ratingInfo.avgRating.toFixed(1)) : course.rating,
-            reviews: ratingInfo ? ratingInfo.count : course.reviews
+            reviews: ratingInfo ? ratingInfo.count : course.reviews,
+            userRating: typeof userRating === 'number' ? userRating : null
         };
     });
 }
@@ -176,8 +194,8 @@ export function getCourseBySlug(slug) {
     return getCourses().find((course) => course.slug === slug) || null;
 }
 
-export function submitCourseRating(courseName, value) {
-    if (value < 1 || value > 5) {
+export function submitCourseRating(courseName, value, userId = '') {
+    if (!Number.isFinite(value) || value < 1 || value > 5) {
         throw new Error('Rating value must be between 1 and 5');
     }
 
@@ -190,15 +208,38 @@ export function submitCourseRating(courseName, value) {
     const ratings = readRatingsStore();
     const previous = ratings[courseName] || {
         avgRating: target.rating,
-        count: target.reviews
+        count: target.reviews,
+        userRatings: {}
     };
 
-    const total = previous.avgRating * previous.count + value;
-    const count = previous.count + 1;
+    const previousCount = Number(previous.count) || 0;
+    const previousAvg = Number(previous.avgRating) || 0;
+    const previousTotal = previousAvg * previousCount;
+    const userRatings = previous.userRatings && typeof previous.userRatings === 'object'
+        ? { ...previous.userRatings }
+        : {};
+
+    const normalizedUserId = typeof userId === 'string' ? userId.trim() : '';
+    const existingUserRating = normalizedUserId ? userRatings[normalizedUserId] : undefined;
+
+    let total = previousTotal;
+    let count = previousCount;
+
+    if (typeof existingUserRating === 'number') {
+        total = total - existingUserRating + value;
+    } else {
+        total += value;
+        count += 1;
+    }
+
+    if (normalizedUserId) {
+        userRatings[normalizedUserId] = value;
+    }
 
     ratings[courseName] = {
         avgRating: total / count,
-        count
+        count,
+        userRatings
     };
 
     writeRatingsStore(ratings);
