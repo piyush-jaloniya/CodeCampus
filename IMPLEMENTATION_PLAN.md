@@ -1,5 +1,31 @@
 # CodeCampus - Implementation Plan
 
+## Frontend Parity Migration Plan (Stitch -> CodeCampus)
+
+### Objective
+
+Replace CodeCampus UI structure and styling to match Stitch screens while preserving all existing app logic, route protection, auth/session handling, API calls, and local storage behaviors.
+
+### Constraints
+
+- Do not change business logic in auth, services, analytics calculations, quiz generation, notes, or roadmap generation.
+- Keep all existing CodeCampus routes and pages functional.
+- Preserve accessibility mode and theme toggle behaviors.
+
+### Delivery Batches
+
+1. Batch A (Static/Auth): Home, Login, Signup, Contact, 404
+2. Batch B (Core App): Dashboard, Courses, Analytics, Flashcards
+3. Batch C (Learning): CoursePage workspace, CoursePlayer, onboarding and quiz surfaces
+4. Regression and parity verification: route-by-route visual and behavior checks
+
+### Acceptance Criteria
+
+- Every existing CodeCampus route has Stitch-like structural composition, not token-only recolors.
+- Private routes keep original redirect/auth behavior.
+- Build and tests pass after each batch.
+- Side-by-side comparison against Stitch export shows close visual parity on hierarchy, spacing, card composition, and calls-to-action.
+
 ## Overview
 
 Comprehensive improvement roadmap for CodeCampus with 3 phases: Quick Wins, Medium Features, and Technical Improvements.
