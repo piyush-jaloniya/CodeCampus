@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Container, Row, Form, InputGroup, Button } from 'react-bootstrap';
+import { Container, Row, Form, InputGroup } from 'react-bootstrap';
 import CourseCard from '../components/CourseCard';
-import CourseComparisonModal from '../components/CourseComparisonModal';
 import { toast } from 'react-toastify';
 import { getCourses, submitCourseRating } from '../services/courseService';
 import LoadingSkeleton from '../components/LoadingSkeleton';
@@ -12,8 +11,6 @@ function Courses({ onWishlist, wishlist, user }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedDifficulty, setSelectedDifficulty] = useState('All');
-    const [compareList, setCompareList] = useState([]);
-    const [showComparison, setShowComparison] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [quizCourse, setQuizCourse] = useState(null);
 
@@ -24,40 +21,25 @@ function Courses({ onWishlist, wishlist, user }) {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setCourses(getCourses());
+            const ratingUserId = user?.email || user?.username || '';
+            setCourses(getCourses(ratingUserId));
             setIsLoading(false);
         }, 500);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [user]);
 
     const categories = ['All', ...new Set(courses.map((course) => course.category))];
     const difficulties = ['All', ...new Set(courses.map((course) => course.difficulty))];
 
-    const toggleCompare = (course) => {
-        const isInList = compareList.some((item) => item.name === course.name);
-        if (isInList) {
-            setCompareList(compareList.filter((item) => item.name !== course.name));
-            return;
-        }
-
-        if (compareList.length < 3) {
-            setCompareList([...compareList, course]);
-            return;
-        }
-
-        alert('You can compare up to 3 courses at a time');
-    };
-
-    const isInCompare = (courseName) => compareList.some((item) => item.name === courseName);
-
     const handleRateCourse = (courseName, value) => {
         try {
-            const updated = submitCourseRating(courseName, value);
+            const ratingUserId = user?.email || user?.username || '';
+            const updated = submitCourseRating(courseName, value, ratingUserId);
             setCourses((previous) =>
                 previous.map((course) =>
                     course.name === courseName
-                        ? { ...course, rating: updated.avgRating, reviews: updated.count }
+                        ? { ...course, rating: updated.avgRating, reviews: updated.count, userRating: value }
                         : course
                 )
             );
@@ -121,14 +103,6 @@ function Courses({ onWishlist, wishlist, user }) {
                     Found {filteredCourses.length} course(s)
                     {searchTerm && ` matching "${searchTerm}"`}
                 </small>
-                <Button
-                    variant="outline-primary"
-                    size="sm"
-                    onClick={() => setShowComparison(true)}
-                    disabled={compareList.length === 0}
-                >
-                    Compare ({compareList.length})
-                </Button>
             </div>
 
             {isLoading ? (
@@ -136,27 +110,27 @@ function Courses({ onWishlist, wishlist, user }) {
             ) : filteredCourses.length > 0 ? (
                 <Row xs={1} sm={2} lg={3} className="g-4 justify-content-center">
                     {filteredCourses.map((course) => (
-                        <CourseCard
-                            key={course.name}
-                            user={user}
-                            courseId={course.id}
-                            course={course.name}
-                            courseSlug={course.slug}
-                            description={course.description}
-                            link={course.link}
-                            image={course.image}
-                            category={course.category}
-                            difficulty={course.difficulty}
-                            duration={course.duration}
-                            rating={course.rating}
-                            reviews={course.reviews}
-                            onWishlist={onWishlist}
-                            wishlist={wishlist}
-                            onCompare={() => toggleCompare(course)}
-                            isInCompare={isInCompare(course.name)}
-                            onRate={(value) => handleRateCourse(course.name, value)}
-                            onTestYourself={() => setQuizCourse(course)}
-                        />
+                        <div key={course.name} className="col d-flex">
+                            <CourseCard
+                                user={user}
+                                courseId={course.id}
+                                course={course.name}
+                                courseSlug={course.slug}
+                                description={course.description}
+                                link={course.link}
+                                image={course.image}
+                                category={course.category}
+                                difficulty={course.difficulty}
+                                duration={course.duration}
+                                rating={course.rating}
+                                reviews={course.reviews}
+                                userRating={course.userRating}
+                                onWishlist={onWishlist}
+                                wishlist={wishlist}
+                                onRate={(value) => handleRateCourse(course.name, value)}
+                                onTestYourself={() => setQuizCourse(course)}
+                            />
+                        </div>
                     ))}
                 </Row>
             ) : (
@@ -165,13 +139,6 @@ function Courses({ onWishlist, wishlist, user }) {
                     <p className="text-muted">Try adjusting your search or filters</p>
                 </div>
             )}
-
-            <CourseComparisonModal
-                show={showComparison}
-                onClose={() => setShowComparison(false)}
-                coursesToCompare={compareList}
-            />
-
             <AdaptiveQuiz
                 show={!!quizCourse}
                 onHide={() => setQuizCourse(null)}

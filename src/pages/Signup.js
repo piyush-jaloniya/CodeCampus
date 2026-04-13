@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert, Row, Col, ProgressBar } from 'react-bootstrap';
+import { Form, Button, ProgressBar } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { registerUser } from '../utils/auth';
@@ -98,99 +98,112 @@ function Signup({ onSignup }) {
 
     return (
         <div className="auth-page-wrapper">
-            <div className="auth-card">
-                <h2 className="auth-card-title">Create an account</h2>
-                <p className="auth-card-subtitle">Join CodeCampus and start your learning journey</p>
-                {submitError && <Alert variant="danger">{submitError}</Alert>}
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId="formUsername" className="mb-3">
-                        <Form.Label>Username</Form.Label>
-                        <Form.Control
-                            type="text"
-                            name="username"
-                            placeholder="Enter username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            isInvalid={!!errors.username}
-                            autoComplete="username"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.username}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+            <div className="auth-split">
+                {/* Brand panel */}
+                <div className="auth-brand-panel">
+                    <div className="auth-brand-logo">CodeCampus</div>
+                    <div className="auth-brand-tagline">Join thousands of learners</div>
+                    <ul className="auth-brand-features">
+                        <li><span>🤖</span><span>AI Study Companion for every course</span></li>
+                        <li><span>🗺️</span><span>Personalized learning roadmap</span></li>
+                        <li><span>🏗️</span><span>Smart flashcards from your notes</span></li>
+                        <li><span>📊</span><span>Progress analytics &amp; insights</span></li>
+                    </ul>
+                </div>
 
-                    <Form.Group controlId="formEmail" className="mb-3">
-                        <Form.Label>Email address</Form.Label>
-                        <Form.Control
-                            type="email"
-                            name="email"
-                            placeholder="Enter email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            isInvalid={!!errors.email}
-                            autoComplete="email"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.email}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                {/* Form panel */}
+                <div className="auth-form-panel">
+                    <h2 className="auth-card-title">Create an account</h2>
+                    <p className="auth-card-subtitle">Join CodeCampus and start your learning journey</p>
+                    {submitError && <div className="alert alert-danger py-2">{submitError}</div>}
+                    <Form onSubmit={handleSubmit}>
+                        <Form.Group controlId="formUsername" className="mb-3">
+                            <Form.Label>Username</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="username"
+                                placeholder="Your display name"
+                                value={formData.username}
+                                onChange={handleChange}
+                                isInvalid={!!errors.username}
+                                autoComplete="username"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.username}
+                            </Form.Control.Feedback>
+                        </Form.Group>
 
-                    <Form.Group controlId="formPassword" className="mb-3">
-                        <Form.Label>Password</Form.Label>
-                        <Form.Control
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            isInvalid={!!errors.password}
-                            autoComplete="new-password"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.password}
-                        </Form.Control.Feedback>
-                        {formData.password && (
-                            <div className="mt-2">
-                                <div className="d-flex justify-content-between">
-                                    <small>Password strength</small>
-                                    <small className={`text-${passwordStrength.variant}`}>{passwordStrength.label}</small>
+                        <Form.Group controlId="formEmail" className="mb-3">
+                            <Form.Label>Email address</Form.Label>
+                            <Form.Control
+                                type="email"
+                                name="email"
+                                placeholder="you@example.com"
+                                value={formData.email}
+                                onChange={handleChange}
+                                isInvalid={!!errors.email}
+                                autoComplete="email"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.email}
+                            </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group controlId="formPassword" className="mb-3">
+                            <Form.Label>Password</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="password"
+                                placeholder="At least 6 characters"
+                                value={formData.password}
+                                onChange={handleChange}
+                                isInvalid={!!errors.password}
+                                autoComplete="new-password"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.password}
+                            </Form.Control.Feedback>
+                            {formData.password && (
+                                <div className="mt-2">
+                                    <div className="d-flex justify-content-between">
+                                        <small style={{ color: 'var(--text-secondary)' }}>Password strength</small>
+                                        <small style={{ color: passwordStrength.variant === 'success' ? 'var(--success)' : passwordStrength.variant === 'danger' ? 'var(--danger-color)' : 'var(--warning-color)', fontWeight: 600 }}>{passwordStrength.label}</small>
+                                    </div>
+                                    <ProgressBar
+                                        now={passwordStrength.score}
+                                        variant={passwordStrength.variant}
+                                        className="mt-1"
+                                        style={{ height: '5px', borderRadius: '99px' }}
+                                    />
                                 </div>
-                                <ProgressBar
-                                    now={passwordStrength.score}
-                                    variant={passwordStrength.variant}
-                                    className="mt-1"
-                                    style={{ height: '6px' }}
-                                />
-                            </div>
-                        )}
-                    </Form.Group>
+                            )}
+                        </Form.Group>
 
-                    <Form.Group controlId="formConfirmPassword" className="mb-3">
-                        <Form.Label>Confirm Password</Form.Label>
-                        <Form.Control
-                            type="password"
-                            name="confirmPassword"
-                            placeholder="Confirm Password"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            isInvalid={!!errors.confirmPassword}
-                            autoComplete="new-password"
-                        />
-                        <Form.Control.Feedback type="invalid">
-                            {errors.confirmPassword}
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                        <Form.Group controlId="formConfirmPassword" className="mb-3">
+                            <Form.Label>Confirm Password</Form.Label>
+                            <Form.Control
+                                type="password"
+                                name="confirmPassword"
+                                placeholder="Repeat your password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                isInvalid={!!errors.confirmPassword}
+                                autoComplete="new-password"
+                            />
+                            <Form.Control.Feedback type="invalid">
+                                {errors.confirmPassword}
+                            </Form.Control.Feedback>
+                        </Form.Group>
 
-                    <Button variant="success" type="submit" className="w-100 mb-3">
-                        Create Account
-                    </Button>
+                        <Button variant="success" type="submit" className="w-100 mb-3">
+                            Create Free Account
+                        </Button>
 
-                    <Row className="text-center">
-                        <Col>
-                            Already have an account? <Link to="/login">Login</Link>
-                        </Col>
-                    </Row>
-                </Form>
+                        <div className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+                            Already have an account? <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</Link>
+                        </div>
+                    </Form>
+                </div>
             </div>
         </div>
     );

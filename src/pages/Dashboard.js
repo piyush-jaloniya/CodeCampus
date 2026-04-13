@@ -128,6 +128,7 @@ function Dashboard({ user, wishlist }) {
         return parsedRoadmap;
     });
     const [roadmapLoading, setRoadmapLoading] = useState(false);
+    const [roadmapError, setRoadmapError] = useState(false);
     const wishlistCount = wishlist.length;
 
     useEffect(() => {
@@ -203,9 +204,11 @@ function Dashboard({ user, wishlist }) {
             );
 
             setRoadmap(result);
+            setRoadmapError(false);
             localStorage.setItem('courseRoadmap', JSON.stringify(result));
         } catch (error) {
             console.error('Roadmap generation failed', error);
+            setRoadmapError(true);
         } finally {
             setRoadmapLoading(false);
         }
@@ -242,35 +245,38 @@ function Dashboard({ user, wishlist }) {
 
     return (
         <Container className="mt-4 dashboard-page">
-            <h2 className="mb-4 dashboard-greeting">Welcome back, {user?.username || 'Learner'}! 👋</h2>
             {user ? (
                 <>
-                    <Row className="g-4 mb-4">
-                        <Col md={6}>
-                            <Card className="h-100 dashboard-card">
-                                <Card.Body>
-                                    <Card.Title className="d-flex justify-content-between align-items-center">
-                                        Profile
-                                        <Badge bg="primary">Active</Badge>
-                                    </Card.Title>
-                                    <p className="mb-2"><strong>Username:</strong> {user.username || 'Learner'}</p>
-                                    <p className="mb-0"><strong>Email:</strong> {user.email}</p>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                        <Col md={6}>
-                            <Card className="h-100 dashboard-card">
-                                <Card.Body>
-                                    <Card.Title>Learning Snapshot</Card.Title>
-                                    <div className="d-flex align-items-baseline gap-2">
-                                        <h3 className="mb-0">{wishlistCount}</h3>
-                                        <span className="text-muted">Saved course(s)</span>
-                                    </div>
-                                    <small className="text-muted">Keep building your personalized learning path.</small>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
+                    {/* Zone 1: Greeting Banner */}
+                    <div className="dashboard-greeting-banner dashboard-greeting">
+                        <div className="d-flex align-items-center gap-3 flex-wrap">
+                            <div className="dashboard-avatar" aria-hidden="true">
+                                {(user.username || 'L').slice(0, 1).toUpperCase()}
+                            </div>
+                            <div className="flex-grow-1">
+                                <h2 className="mb-0 fw-bold" style={{ fontSize: 'var(--text-2xl)', letterSpacing: '-0.02em' }}>
+                                    Welcome back, {user?.username || 'Learner'}! 👋
+                                </h2>
+                                <p className="mb-0" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                    {user.email}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="d-flex flex-wrap gap-2 mt-4">
+                            <span className="stat-chip">
+                                <span className="stat-chip-icon">📚</span>
+                                {wishlistCount} Saved
+                            </span>
+                            <span className="stat-chip">
+                                <span className="stat-chip-icon">✅</span>
+                                {completedCourses.length} Completed
+                            </span>
+                            <span className="stat-chip">
+                                <span className="stat-chip-icon">🗺️</span>
+                                {recommendedPath.length} Path courses
+                            </span>
+                        </div>
+                    </div>
 
                     <Card className="dashboard-card">
                         <Card.Body>
@@ -371,6 +377,13 @@ function Dashboard({ user, wishlist }) {
                                 </div>
                             )}
 
+                            {roadmapError && !roadmapLoading && (
+                                <div className="text-center py-4">
+                                    <p style={{ color: 'var(--danger-color)', marginBottom: 'var(--sp-3)' }}>⚠️ Failed to generate roadmap. Check your connection and try again.</p>
+                                    <Button size="sm" variant="outline-primary" onClick={handleRegenerateRoadmap}>Retry</Button>
+                                </div>
+                            )}
+
                             {!roadmapLoading && roadmap?.stages?.length > 0 && (
                                 <div
                                     style={{
@@ -388,12 +401,13 @@ function Dashboard({ user, wishlist }) {
                                                 <div
                                                     style={{
                                                         fontSize: '20px',
-                                                        color: 'var(--text-muted)',
+                                                        color: 'var(--accent)',
                                                         marginTop: '40px',
-                                                        flexShrink: 0
+                                                        flexShrink: 0,
+                                                        opacity: 0.7
                                                     }}
                                                 >
-                                                    →
+                                                    <i className="bi bi-chevron-right" />
                                                 </div>
                                             )}
                                         </React.Fragment>
@@ -437,7 +451,12 @@ function Dashboard({ user, wishlist }) {
                     <StudyHeatmap />
                 </>
             ) : (
-                <Alert variant="warning">Please login to view your dashboard.</Alert>
+                <div className="text-center py-5" style={{ color: 'var(--text-secondary)' }}>
+                    <p style={{ fontSize: '2.5rem' }}>🔒</p>
+                    <h5 style={{ color: 'var(--text-primary)' }}>Sign in to view your dashboard</h5>
+                    <p style={{ fontSize: 'var(--text-sm)' }}>Your learning progress, roadmap, and saved courses await.</p>
+                    <Link to="/login" className="btn btn-primary mt-2">Sign In</Link>
+                </div>
             )}
         </Container>
     );
