@@ -65,9 +65,9 @@ function Courses({ onWishlist, wishlist, user }) {
         <Container className="mt-4">
             <h2 className="text-center mb-5">Our Courses</h2>
 
-            <Row className="mb-4 g-3">
+            <Row className="mb-4 g-3 courses-filter-row">
                 <div className="col-md-4">
-                    <InputGroup>
+                    <InputGroup className="courses-search-group">
                         <InputGroup.Text><i className="bi bi-search"></i></InputGroup.Text>
                         <Form.Control
                             placeholder="Search courses..."
@@ -121,7 +121,6 @@ function Courses({ onWishlist, wishlist, user }) {
                                 image={course.image}
                                 category={course.category}
                                 difficulty={course.difficulty}
-                                duration={course.duration}
                                 rating={course.rating}
                                 reviews={course.reviews}
                                 userRating={course.userRating}

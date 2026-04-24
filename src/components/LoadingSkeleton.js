@@ -7,7 +7,7 @@ function LoadingSkeleton({ count = 3 }) {
             {Array.from({ length: count }).map((_, index) => (
                 <Col key={index}>
                     <Card className="m-3 h-100">
-                        <div style={{ height: '180px' }} className="skeleton-bg" />
+                        <div className="skeleton-bg skeleton-thumb" />
                         <Card.Body>
                             <Placeholder as={Card.Title} animation="glow">
                                 <Placeholder xs={8} />

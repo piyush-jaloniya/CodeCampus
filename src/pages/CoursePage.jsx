@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Badge, Button, Card, Container, Form, Spinner } from 'react-bootstrap';
+import { Alert, Button, Card, Container, Form, Spinner } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import { askGemini, askGeminiJSON } from '../utils/geminiApi';
 import { getCourses } from '../services/courseService';
@@ -172,32 +172,15 @@ function loadYouTubeIframeApi() {
 function CoursePage() {
     const { courseId } = useParams();
     const course = useMemo(() => getCourses().find((item) => item.id === courseId), [courseId]);
-    const hasPlaylist = Boolean(Array.isArray(course?.videos) && course.videos.length > 0);
-    const [activeVideoIndex, setActiveVideoIndex] = useState(0);
-    const [completedVideos, setCompletedVideos] = useState(() => {
-        let parsedCompletedVideos = [];
-        try {
-            parsedCompletedVideos = JSON.parse(localStorage.getItem(`completedVideos:${courseId}`) || '[]');
-        } catch {
-            parsedCompletedVideos = [];
-            localStorage.removeItem(`completedVideos:${courseId}`);
-        }
-        return parsedCompletedVideos;
-    });
+    const courseTitle = course?.title || course?.name || 'Course';
     const currentVideoUrl = useMemo(() => {
         if (!course) {
             return '';
         }
 
-        if (hasPlaylist) {
-            const activeVideo = course.videos[activeVideoIndex] || course.videos[0];
-            return activeVideo ? `https://www.youtube.com/watch?v=${activeVideo.videoId}` : '';
-        }
-
         return course.youtubeUrl || course.link || '';
-    }, [course, hasPlaylist, activeVideoIndex]);
+    }, [course]);
     const embedUrl = useMemo(() => (currentVideoUrl ? convertToEmbedUrl(currentVideoUrl) : null), [currentVideoUrl]);
-    const [isNarrow, setIsNarrow] = useState(() => window.innerWidth < 768);
 
     const [videoProgress, setVideoProgress] = useState({
         currentTime: 0,
@@ -296,18 +279,6 @@ function CoursePage() {
     }, [courseId]);
 
     useEffect(() => {
-        let parsedCompletedVideos = [];
-        try {
-            parsedCompletedVideos = JSON.parse(localStorage.getItem(`completedVideos:${courseId}`) || '[]');
-        } catch {
-            parsedCompletedVideos = [];
-            localStorage.removeItem(`completedVideos:${courseId}`);
-        }
-        setCompletedVideos(parsedCompletedVideos);
-        setActiveVideoIndex(0);
-    }, [courseId]);
-
-    useEffect(() => {
         const persistable = notes
             .filter((note) => !note.isGenerating)
             .map((note) => ({
@@ -332,12 +303,6 @@ function CoursePage() {
     }, [messages.length, isTyping]);
 
     useEffect(() => {
-        const onResize = () => setIsNarrow(window.innerWidth < 768);
-        window.addEventListener('resize', onResize);
-        return () => window.removeEventListener('resize', onResize);
-    }, []);
-
-    useEffect(() => {
         return () => {
             if (toastTimeoutRef.current) {
                 clearTimeout(toastTimeoutRef.current);
@@ -351,18 +316,6 @@ function CoursePage() {
         }
 
         let isDisposed = false;
-
-        const handleVideoSwitch = (nextIndex) => {
-            if (!hasPlaylist) {
-                return;
-            }
-
-            if (nextIndex < 0 || nextIndex >= course.videos.length) {
-                return;
-            }
-
-            setActiveVideoIndex(nextIndex);
-        };
 
         const clearIntervals = () => {
             if (notesIntervalRef.current) {
@@ -450,39 +403,9 @@ function CoursePage() {
         };
 
         const markCourseCompleted = () => {
-            const currentVideoId = hasPlaylist
-                ? course.videos[activeVideoIndex]?.videoId
-                : extractVideoId(course.youtubeUrl || course.link || '');
+            const currentVideoId = extractVideoId(course.youtubeUrl || course.link || '');
 
             if (!currentVideoId) {
-                return;
-            }
-
-            const completedVideosKey = `completedVideos:${courseId}`;
-            let stored = [];
-            try {
-                stored = JSON.parse(localStorage.getItem(completedVideosKey) || '[]');
-            } catch {
-                stored = [];
-                localStorage.removeItem(completedVideosKey);
-            }
-
-            if (!stored.includes(currentVideoId)) {
-                stored.push(currentVideoId);
-                localStorage.setItem(completedVideosKey, JSON.stringify(stored));
-                setCompletedVideos(stored);
-            }
-
-            if (hasPlaylist && activeVideoIndex < course.videos.length - 1) {
-                handleVideoSwitch(activeVideoIndex + 1);
-            }
-
-            const allCourseVideoIds = hasPlaylist
-                ? course.videos.map((video) => video.videoId).filter(Boolean)
-                : [currentVideoId];
-
-            const allVideosWatched = allCourseVideoIds.every((videoId) => stored.includes(videoId));
-            if (!allVideosWatched) {
                 return;
             }
 
@@ -556,19 +479,7 @@ function CoursePage() {
             }
             playerRef.current = null;
         };
-    }, [course, embedUrl, courseId, hasPlaylist, activeVideoIndex]);
-
-    const handleVideoSwitch = (nextIndex) => {
-        if (!course || !hasPlaylist) {
-            return;
-        }
-
-        if (nextIndex < 0 || nextIndex >= course.videos.length) {
-            return;
-        }
-
-        setActiveVideoIndex(nextIndex);
-    };
+    }, [course, embedUrl, courseId]);
 
     const handleSendMessage = async () => {
         const trimmed = inputText.trim();
@@ -819,364 +730,208 @@ function CoursePage() {
     }
 
     return (
-        <div
-            onClick={hideSelectionPopup}
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100vh',
-                overflow: 'hidden',
-                paddingTop: '60px'
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    flex: 1,
-                    overflow: 'hidden',
-                    transition: 'all 0.3s ease',
-                    flexDirection: isNarrow ? 'column' : 'row',
-                    gap: '12px',
-                    padding: '12px'
-                }}
-            >
-                <div
-                    style={{
-                        flex: isNarrow ? '1 1 100%' : '3 1 0%',
-                        height: '100%',
-                        overflow: 'hidden',
-                        minHeight: 0
-                    }}
-                >
-                    <Card className="h-100">
-                        <Card.Body className="d-flex flex-column" style={{ minHeight: 0 }}>
-                            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', borderRadius: '12px', backgroundColor: '#020617' }}>
-                                <iframe
-                                    id="course-youtube-player"
-                                    title={course.name}
-                                    src={embedUrl}
-                                    className="no-transition"
-                                    style={{ width: '100%', height: '100%', border: 0 }}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    referrerPolicy="strict-origin-when-cross-origin"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
-
-                            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
-                                <div>
-                                    <h5 className="mb-1">{course.name}</h5>
-                                    <small className="text-muted">{course.category} • {course.difficulty}</small>
+        <div onClick={hideSelectionPopup} className={`course-layout-root course-study-page ${isOpen ? 'qa-open' : ''}`}>
+            <Container fluid className="course-study-container">
+                <div className="course-layout-main">
+                    <div className="course-video-pane">
+                        <Card className="h-100">
+                            <Card.Body className="d-flex flex-column course-video-card-body">
+                                <div className="course-video-frame-shell">
+                                    <iframe
+                                        id="course-youtube-player"
+                                        title={course.name}
+                                        src={embedUrl}
+                                        className="course-video-frame no-transition"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerPolicy="strict-origin-when-cross-origin"
+                                        allowFullScreen
+                                    ></iframe>
                                 </div>
-                                <Badge bg="primary">{course.duration}</Badge>
-                            </div>
 
-                            <div className="progress-readout mt-3">
-                                <span className="font-monospace">
-                                    {formatTime(videoProgress.currentTime)} / {formatTime(videoProgress.duration)}
-                                </span>
-                                <span>{Math.round(videoProgress.percentage)}% watched</span>
-                            </div>
-                            <div className="progress mt-2" style={{ height: '8px' }}>
-                                <div
-                                    className="progress-bar bg-success"
-                                    role="progressbar"
-                                    style={{ width: `${videoProgress.percentage}%` }}
-                                    aria-valuenow={videoProgress.percentage}
-                                    aria-valuemin="0"
-                                    aria-valuemax="100"
-                                ></div>
-                            </div>
-
-                            {hasPlaylist && (
-                                <div className="mt-3" style={{ border: '1px solid var(--border-color)', borderRadius: '10px' }}>
-                                    <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                                        Playlist
-                                    </div>
-                                    <div style={{ maxHeight: '180px', overflowY: 'auto', padding: '8px 10px' }}>
-                                        {course.videos.map((video, index) => {
-                                            const isActiveVideo = index === activeVideoIndex;
-                                            const isCompletedVideo = completedVideos.includes(video.videoId);
-
-                                            return (
-                                                <button
-                                                    key={video.id}
-                                                    type="button"
-                                                    onClick={() => handleVideoSwitch(index)}
-                                                    style={{
-                                                        width: '100%',
-                                                        textAlign: 'left',
-                                                        marginBottom: '6px',
-                                                        border: '1px solid var(--border-color)',
-                                                        borderRadius: '8px',
-                                                        padding: '8px 10px',
-                                                        background: isActiveVideo ? 'var(--accent-bg)' : 'transparent',
-                                                        color: 'var(--text-primary)',
-                                                        fontSize: '0.87rem'
-                                                    }}
-                                                >
-                                                    <span style={{ color: isCompletedVideo ? 'var(--success)' : 'var(--text-secondary)', marginRight: '8px' }}>
-                                                        {isCompletedVideo ? '✓' : '○'}
-                                                    </span>
-                                                    {video.title}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 14px' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleVideoSwitch(activeVideoIndex - 1)}
-                                            disabled={activeVideoIndex === 0}
-                                        >
-                                            ← Previous
-                                        </button>
-                                        <span style={{ fontSize: '11px', color: '#8892b0' }}>
-                                            {activeVideoIndex + 1} / {course.videos.length}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleVideoSwitch(activeVideoIndex + 1)}
-                                            disabled={activeVideoIndex === course.videos.length - 1}
-                                        >
-                                            Next →
-                                        </button>
-                                    </div>
+                                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                                    <h5 className="mb-0">{courseTitle}</h5>
+                                    <small className="text-muted text-end">{course.category} • {course.difficulty}</small>
                                 </div>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </div>
 
-                <div
-                    onClick={(event) => event.stopPropagation()}
-                    style={{
-                        flex: isNarrow ? '1 1 100%' : '2 1 0%',
-                        height: '100%',
-                        overflow: 'hidden',
-                        minHeight: 0
-                    }}
-                >
-                    <Card className="h-100 course-notes-panel" id="course-notes-print" style={{ minHeight: 0 }}>
-                        <Card.Header className="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-                            <div className="d-flex align-items-center gap-2">
-                                <strong>AI Notes</strong>
-                                <span className="live-badge">● Live</span>
-                            </div>
-                            <div className="d-flex align-items-center gap-2">
-                                <Button
-                                    size="sm"
-                                    variant={notes.length >= 2 ? 'outline-info' : 'outline-secondary'}
-                                    disabled={notes.length < 2}
-                                    onClick={handleGenerateQuiz}
-                                    title={notes.length < 2 ? 'Watch more to generate a quiz' : 'Generate Quiz'}
-                                >
-                                    Generate Quiz
-                                </Button>
-                                <Button size="sm" variant="outline-success" onClick={() => window.print()}>
-                                    Download Notes
-                                </Button>
-                            </div>
-                        </Card.Header>
-                        <Card.Body
-                            onMouseUp={handleTextSelection}
-                            style={{ height: '100%', overflowY: 'auto' }}
-                        >
-                            {notes.length === 0 && (
-                                <p className="text-muted mb-0">Play the video to generate live notes every 30 seconds.</p>
-                            )}
+                            </Card.Body>
+                        </Card>
+                    </div>
 
-                            {notesError && <Alert variant="warning">{notesError}</Alert>}
+                    <div onClick={(event) => event.stopPropagation()} className="course-notes-pane">
+                        <Card className="h-100 course-notes-panel course-notes-card" id="course-notes-print">
+                            <Card.Header className="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                                <div className="d-flex align-items-center gap-2">
+                                    <strong>AI Notes</strong>
+                                    <span className="live-badge">● Live</span>
+                                </div>
+                                <div className="d-flex align-items-center gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant={notes.length >= 2 ? 'outline-secondary' : 'outline-secondary'}
+                                        disabled={notes.length < 2}
+                                        onClick={handleGenerateQuiz}
+                                        title={notes.length < 2 ? 'Watch more to generate a quiz' : 'Generate Quiz'}
+                                    >
+                                        Generate Quiz
+                                    </Button>
+                                    <Button size="sm" variant="outline-success" onClick={() => window.print()}>
+                                        Download Notes
+                                    </Button>
+                                </div>
+                            </Card.Header>
+                            <Card.Body
+                                onMouseUp={handleTextSelection}
+                                className="course-notes-scroll"
+                            >
+                                {notes.length === 0 && (
+                                    <p className="text-muted mb-0">Play the video to generate live notes every 30 seconds.</p>
+                                )}
 
-                            {notes.map((note) => (
-                                <article key={note.id} className="note-item">
-                                    <div className="note-time font-monospace mb-2">
-                                        {note.startTime} - {note.endTime}
-                                    </div>
-                                    {note.isGenerating ? (
-                                        <div className="note-generating">
-                                            <span className="pulse-dot"></span>
-                                            <span className="pulse-dot"></span>
-                                            <span className="pulse-dot"></span>
+                                {notesError && <Alert variant="warning">{notesError}</Alert>}
+
+                                {notes.map((note) => (
+                                    <article key={note.id} className="note-item">
+                                        <div className="note-time font-monospace mb-2">
+                                            {note.startTime} - {note.endTime}
                                         </div>
-                                    ) : (
-                                        <div className="note-content">{renderBasicMarkdown(note.content, `note-${note.id}`)}</div>
-                                    )}
-                                </article>
-                            ))}
-                            <div ref={notesEndRef}></div>
-                        </Card.Body>
-                    </Card>
+                                        {note.isGenerating ? (
+                                            <div className="note-generating">
+                                                <span className="pulse-dot"></span>
+                                                <span className="pulse-dot"></span>
+                                                <span className="pulse-dot"></span>
+                                            </div>
+                                        ) : (
+                                            <div className="note-content">{renderBasicMarkdown(note.content, `note-${note.id}`)}</div>
+                                        )}
+                                    </article>
+                                ))}
+                                <div ref={notesEndRef}></div>
+                            </Card.Body>
+                        </Card>
+                    </div>
                 </div>
-            </div>
 
-            <div
-                style={{
-                    flexShrink: 0,
-                    height: isOpen ? drawerExpandedHeight : DRAWER_COLLAPSED_HEIGHT,
-                    transition: 'height 0.3s ease',
-                    overflow: 'hidden',
-                    borderTop: '1px solid var(--border-color)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    background: '#0b1120'
-                }}
-            >
                 <div
-                    onClick={() => setIsOpen(!isOpen)}
-                    style={{
-                        height: 44,
-                        flexShrink: 0,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0 16px',
-                        color: 'var(--text-primary)',
-                        fontWeight: 600
-                    }}
+                    className="qa-drawer-shell"
+                    style={{ '--drawer-height': `${isOpen ? drawerExpandedHeight : DRAWER_COLLAPSED_HEIGHT}px` }}
                 >
-                    <span>AI Q&A Assistant — ask anything about this lesson</span>
-                    <span className="d-flex align-items-center gap-2">
-                        {isOpen && (
-                            <>
-                                <Button
-                                    size="sm"
-                                    variant="outline-light"
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        adjustDrawerHeight(-DRAWER_STEP);
-                                    }}
-                                    title="Decrease drawer height"
-                                >
-                                    -
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline-light"
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        adjustDrawerHeight(DRAWER_STEP);
-                                    }}
-                                    title="Increase drawer height"
-                                >
-                                    +
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline-light"
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        resetDrawerHeight();
-                                    }}
-                                    title="Reset drawer height"
-                                >
-                                    Reset
-                                </Button>
-                            </>
-                        )}
-                        <span>{isOpen ? '▼' : '▲'}</span>
-                    </span>
-                </div>
-
-                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div className="qa-header d-flex justify-content-between align-items-center">
-                        <h6 className="mb-0">Lesson Q&A</h6>
-                        <Button
-                            size="sm"
-                            variant="outline-light"
-                            onClick={() => setMessages([])}
-                            disabled={messages.length === 0 && !isTyping}
-                        >
-                            Clear chat
-                        </Button>
+                    <div
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="qa-drawer-toggle"
+                    >
+                        <span>AI Q&A Assistant — ask anything about this lesson</span>
+                        <span className="d-flex align-items-center gap-2">
+                            {isOpen && (
+                                <>
+                                    <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            adjustDrawerHeight(-DRAWER_STEP);
+                                        }}
+                                        title="Decrease drawer height"
+                                    >
+                                        -
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            adjustDrawerHeight(DRAWER_STEP);
+                                        }}
+                                        title="Increase drawer height"
+                                    >
+                                        +
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            resetDrawerHeight();
+                                        }}
+                                        title="Reset drawer height"
+                                    >
+                                        Reset
+                                    </Button>
+                                </>
+                            )}
+                            <span>{isOpen ? '▼' : '▲'}</span>
+                        </span>
                     </div>
 
-                    <div className="qa-messages">
-                        {messages.length === 0 && !isTyping ? (
-                            <p className="text-muted mb-0">Ask your first question about this lesson.</p>
-                        ) : (
-                            messages.map((msg, index) => (
-                                <div key={`${msg.role}-${index}`} className={`qa-message ${msg.role === 'user' ? 'user' : 'ai'}`}>
-                                    {msg.role === 'assistant' && <span className="qa-avatar">AI</span>}
-                                    <div className="qa-bubble">{renderBasicMarkdown(msg.content, `chat-${index}`)}</div>
-                                </div>
-                            ))
-                        )}
+                    <div className="qa-content-wrap">
+                        <div className="qa-header d-flex justify-content-between align-items-center">
+                            <h6 className="mb-0">Lesson Q&A</h6>
+                            <Button
+                                size="sm"
+                                variant="outline-secondary"
+                                onClick={() => setMessages([])}
+                                disabled={messages.length === 0 && !isTyping}
+                            >
+                                Clear chat
+                            </Button>
+                        </div>
 
-                        {isTyping && (
-                            <div className="qa-message ai">
-                                <span className="qa-avatar">AI</span>
-                                <div className="qa-bubble typing-row">
-                                    <Spinner animation="grow" size="sm" />
-                                    <Spinner animation="grow" size="sm" />
-                                    <Spinner animation="grow" size="sm" />
-                                </div>
-                            </div>
-                        )}
+                        <div className="qa-messages">
+                            {messages.length === 0 && !isTyping ? (
+                                <p className="text-muted mb-0">Ask your first question about this lesson.</p>
+                            ) : (
+                                messages.map((msg, index) => (
+                                    <div key={`${msg.role}-${index}`} className={`qa-message ${msg.role === 'user' ? 'user' : 'ai'}`}>
+                                        {msg.role === 'assistant' && <span className="qa-avatar">AI</span>}
+                                        <div className="qa-bubble">{renderBasicMarkdown(msg.content, `chat-${index}`)}</div>
+                                    </div>
+                                ))
+                            )}
 
-                        {chatError && <small className="text-warning d-block mt-2">{chatError}</small>}
-                        <div ref={chatEndRef}></div>
+                            {isTyping && (
+                                <div className="qa-message ai">
+                                    <span className="qa-avatar">AI</span>
+                                    <div className="qa-bubble typing-row">
+                                        <Spinner animation="grow" size="sm" />
+                                        <Spinner animation="grow" size="sm" />
+                                        <Spinner animation="grow" size="sm" />
+                                    </div>
+                                </div>
+                            )}
+
+                            {chatError && <small className="text-warning d-block mt-2">{chatError}</small>}
+                            <div ref={chatEndRef}></div>
+                        </div>
+
+                        <Form className="qa-input-row" onSubmit={(event) => { event.preventDefault(); handleSendMessage(); }}>
+                            <Form.Control
+                                value={inputText}
+                                onChange={(event) => setInputText(event.target.value)}
+                                onKeyDown={handleInputKeyDown}
+                                placeholder="Ask a question about this lesson..."
+                            />
+                            <Button type="submit" variant="primary" disabled={isTyping || !inputText.trim()}>Send</Button>
+                        </Form>
                     </div>
-
-                    <Form className="qa-input-row" onSubmit={(event) => { event.preventDefault(); handleSendMessage(); }}>
-                        <Form.Control
-                            value={inputText}
-                            onChange={(event) => setInputText(event.target.value)}
-                            onKeyDown={handleInputKeyDown}
-                            placeholder="Ask a question about this lesson..."
-                        />
-                        <Button type="submit" disabled={isTyping || !inputText.trim()}>Send</Button>
-                    </Form>
                 </div>
-            </div>
+            </Container>
 
             {selectionPopup.visible && (
                 <div
                     onClick={(event) => event.stopPropagation()}
-                    style={{
-                        position: 'fixed',
-                        left: selectionPopup.x,
-                        top: selectionPopup.y,
-                        transform: 'translate(-50%, -100%)',
-                        zIndex: 999,
-                        background: '#1a2235',
-                        border: '1px solid rgba(79,142,247,0.3)',
-                        borderRadius: '8px',
-                        padding: '6px 8px',
-                        display: 'flex',
-                        gap: '6px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
-                    }}
+                    className="selection-popup"
+                    style={{ '--popup-x': `${selectionPopup.x}px`, '--popup-y': `${selectionPopup.y}px` }}
                 >
                     <button
                         type="button"
                         onClick={() => handleExplainMore(selectionPopup.text)}
-                        style={{
-                            background: '#2563eb',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '5px 10px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600
-                        }}
+                        className="selection-popup-btn explain"
                     >
                         Explain more
                     </button>
                     <button
                         type="button"
                         onClick={() => handleSaveFlashcard(selectionPopup.text)}
-                        style={{
-                            background: '#0f766e',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '6px',
-                            padding: '5px 10px',
-                            fontSize: '0.8rem',
-                            fontWeight: 600
-                        }}
+                        className="selection-popup-btn flashcard"
                     >
                         Save flashcard
                     </button>
@@ -1185,28 +940,12 @@ function CoursePage() {
 
             {explanationModal.open && (
                 <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        zIndex: 1001,
-                        background: 'rgba(0,0,0,0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px'
-                    }}
+                    className="overlay-modal"
                     onClick={() => setExplanationModal({ open: false, loading: false, content: '', originalText: '' })}
                 >
                     <div
                         onClick={(event) => event.stopPropagation()}
-                        style={{
-                            width: '92%',
-                            maxWidth: '480px',
-                            background: '#ffffff',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.28)'
-                        }}
+                        className="overlay-card"
                     >
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <h6 className="mb-0">Explanation</h6>
@@ -1214,29 +953,13 @@ function CoursePage() {
                                 type="button"
                                 aria-label="Close explanation"
                                 onClick={() => setExplanationModal({ open: false, loading: false, content: '', originalText: '' })}
-                                style={{
-                                    border: 'none',
-                                    background: 'transparent',
-                                    fontSize: '1.2rem',
-                                    lineHeight: 1,
-                                    cursor: 'pointer'
-                                }}
+                                className="overlay-close-btn"
                             >
                                 ×
                             </button>
                         </div>
 
-                        <div
-                            style={{
-                                borderLeft: '4px solid #4f8ef7',
-                                background: '#eef4ff',
-                                padding: '10px 12px',
-                                borderRadius: '8px',
-                                marginBottom: '12px',
-                                color: '#1e293b',
-                                fontStyle: 'italic'
-                            }}
-                        >
+                        <div className="overlay-quote">
                             "{explanationModal.originalText}"
                         </div>
 
@@ -1246,7 +969,7 @@ function CoursePage() {
                                 <span>Generating explanation...</span>
                             </div>
                         ) : (
-                            <div style={{ maxHeight: '260px', overflowY: 'auto' }}>
+                            <div className="overlay-content-scroll">
                                 {renderBasicMarkdown(explanationModal.content || '', 'selection-explain')}
                             </div>
                         )}
@@ -1274,44 +997,18 @@ function CoursePage() {
 
             {quizOpen && (
                 <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        zIndex: 1000,
-                        background: 'rgba(0,0,0,0.75)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '16px'
-                    }}
+                    className="quiz-overlay"
                     onClick={resetQuizState}
                 >
                     <div
                         onClick={(event) => event.stopPropagation()}
-                        style={{
-                            width: '90%',
-                            maxWidth: '600px',
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
-                            background: '#ffffff',
-                            borderRadius: '14px',
-                            padding: '16px',
-                            position: 'relative'
-                        }}
+                        className="quiz-card"
                     >
                         <button
                             type="button"
                             onClick={resetQuizState}
                             aria-label="Close quiz"
-                            style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 12,
-                                border: 'none',
-                                background: 'transparent',
-                                fontSize: '1.25rem',
-                                cursor: 'pointer'
-                            }}
+                            className="quiz-close-btn"
                         >
                             ×
                         </button>
@@ -1363,12 +1060,7 @@ function CoursePage() {
 
                                 {hasAnsweredCurrent && (
                                     <div
-                                        className="mt-3 p-2 rounded"
-                                        style={{
-                                            background: isCurrentCorrect ? '#dcfce7' : '#fee2e2',
-                                            color: isCurrentCorrect ? '#166534' : '#991b1b',
-                                            border: `1px solid ${isCurrentCorrect ? '#86efac' : '#fca5a5'}`
-                                        }}
+                                        className={`mt-3 p-2 rounded quiz-feedback ${isCurrentCorrect ? 'correct' : 'incorrect'}`}
                                     >
                                         <strong>{isCurrentCorrect ? 'Correct.' : 'Not quite.'}</strong> {currentQuestion.explanation}
                                     </div>

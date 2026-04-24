@@ -1,13 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Container, Nav, Navbar as BootstrapNavbar, Image } from 'react-bootstrap';
 import logo from './icon.ico';
 import { startTour } from '../pages/Dashboard';
-import { useTheme } from '../context/ThemeContext';
 
 function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
     const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
     const isLoggedIn = !!user;
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -27,18 +25,43 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Primary nav links visible to everyone
+    // Primary nav links in the top navbar
     const primaryLinks = [
         { path: '/', label: 'Home' },
         { path: '/courses', label: 'Courses' },
+        ...(isLoggedIn
+            ? [
+                { path: '/dashboard', label: 'Dashboard' },
+                { path: '/flashcards', label: 'Flashcards' },
+                { path: '/analytics', label: 'Analytics' },
+            ]
+            : []),
     ];
 
     const initials = user?.username
         ? user.username.slice(0, 2).toUpperCase()
         : 'Me';
 
+    const homePalette = useMemo(() => {
+        if (location.pathname !== '/') {
+            return null;
+        }
+
+        const params = new URLSearchParams(location.search);
+        const queryPalette = params.get('palette');
+
+        if (queryPalette === 'bw') {
+            return 'bw';
+        }
+
+        const storedPalette = localStorage.getItem('homePalette');
+        return storedPalette === 'bw' ? 'bw' : 'forest';
+    }, [location.pathname, location.search]);
+
+    const navbarPaletteClass = homePalette ? `home-nav-${homePalette}` : '';
+
     return (
-        <BootstrapNavbar variant="dark" expand="lg" className="app-navbar">
+        <BootstrapNavbar variant="dark" expand="lg" className={`app-navbar ${navbarPaletteClass}`}>
             <Container>
                 <BootstrapNavbar.Brand as={Link} to={isLoggedIn ? '/dashboard' : '/'} className="d-flex align-items-center brand-lockup">
                     <Image
@@ -70,31 +93,11 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
 
                     {/* Right-side controls */}
                     <Nav className="nav-action-links">
-                        {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                            style={{
-                                background: 'var(--bg-hover)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '8px',
-                                padding: '6px 10px',
-                                cursor: 'pointer',
-                                color: 'var(--text-secondary)',
-                                fontSize: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            {theme === 'dark' ? '☀ Light' : '🌙 Dark'}
-                        </button>
-
                         {isLoggedIn ? (
                             /* Avatar dropdown for authenticated users */
-                            <div style={{ position: 'relative' }} ref={dropdownRef}>
+                            <div className="nav-avatar-wrap" ref={dropdownRef}>
                                 <button
+                                    type="button"
                                     className="nav-avatar-btn"
                                     onClick={() => setDropdownOpen((prev) => !prev)}
                                     aria-expanded={dropdownOpen}
@@ -103,45 +106,16 @@ function Navbar({ user, onLogout, accessibilityMode, onToggleAccessibility }) {
                                 >
                                     <div className="nav-avatar-circle" aria-hidden="true">{initials}</div>
                                     <span className="nav-avatar-name">{user.username || 'Learner'}</span>
-                                    <i className={`bi bi-chevron-${dropdownOpen ? 'up' : 'down'}`} style={{ fontSize: '0.7rem', opacity: 0.7 }} />
+                                    <i className={`bi bi-chevron-${dropdownOpen ? 'up' : 'down'} nav-avatar-chevron`} />
                                 </button>
 
                                 {dropdownOpen && (
                                     <div className="nav-dropdown" role="menu">
                                         {/* Account info header */}
                                         <div className="nav-dropdown-header">
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Signed in as</div>
-                                            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontWeight: 600, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+                                            <div className="nav-account-label">Signed in as</div>
+                                            <div className="nav-account-email">{user.email}</div>
                                         </div>
-
-                                        {/* Navigation items */}
-                                        <Link
-                                            to="/dashboard"
-                                            className="nav-dropdown-item"
-                                            role="menuitem"
-                                            onClick={() => setDropdownOpen(false)}
-                                        >
-                                            <i className="bi bi-speedometer2" />
-                                            Dashboard
-                                        </Link>
-                                        <Link
-                                            to="/flashcards"
-                                            className="nav-dropdown-item"
-                                            role="menuitem"
-                                            onClick={() => setDropdownOpen(false)}
-                                        >
-                                            <i className="bi bi-card-text" />
-                                            Flashcards
-                                        </Link>
-                                        <Link
-                                            to="/analytics"
-                                            className="nav-dropdown-item"
-                                            role="menuitem"
-                                            onClick={() => setDropdownOpen(false)}
-                                        >
-                                            <i className="bi bi-bar-chart-line" />
-                                            Analytics
-                                        </Link>
 
                                         <div className="nav-dropdown-divider" />
 

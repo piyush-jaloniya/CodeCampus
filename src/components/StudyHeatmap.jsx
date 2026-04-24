@@ -116,7 +116,7 @@ function StudyHeatmap() {
                 <div className="heatmap-wrapper">
                     <div className="heatmap-months">
                         {monthLabels.map((month, idx) => (
-                            <span key={`${month.label}-${idx}`} style={{ left: month.left }}>{month.label}</span>
+                            <span key={`${month.label}-${idx}`} className="heatmap-month-label" style={{ '--month-left': month.left }}>{month.label}</span>
                         ))}
                     </div>
                     <div className="heatmap-main">

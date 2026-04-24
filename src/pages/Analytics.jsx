@@ -17,10 +17,9 @@ import {
 import { askGemini } from '../utils/geminiApi';
 import { getCourses } from '../services/courseService';
 import { formatLocalDateKey, getStudyLog } from '../utils/studyActivity';
-import { useTheme } from '../context/ThemeContext';
 
 const chartLabelColor = 'var(--text-secondary)';
-const pieColors = ['#4f8ef7', '#7c3aed', '#06d6a0', '#f7a525', '#34d399', '#fb7185', '#38bdf8'];
+const pieColors = ['#ff5c36', '#ffb000', '#06d6a0', '#3b82f6', '#22c55e', '#fb7185', '#0ea5e9'];
 
 function getLocalStorageByPrefix(prefix) {
     const result = {};
@@ -67,7 +66,6 @@ function getCurrentStreak(studyDates) {
 }
 
 function Analytics() {
-    const { theme } = useTheme();
     const [insightLoading, setInsightLoading] = useState(false);
     const [insightText, setInsightText] = useState('');
     const [refreshKey, setRefreshKey] = useState(0);
@@ -78,22 +76,15 @@ function Analytics() {
     }, []);
 
     const chartTooltipStyle = {
-        background: theme === 'dark' ? '#1a2235' : '#ffffff',
-        border: `1px solid ${theme === 'dark' ? 'rgba(79,142,247,0.3)' : 'rgba(0,0,0,0.12)'}`,
+        background: 'var(--bg-card)',
+        border: '2px solid var(--border-color)',
         color: 'var(--text-primary)',
         fontFamily: 'inherit',
         borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        boxShadow: '3px 3px 0 rgba(7, 9, 15, 0.85)'
     };
 
-    const chartGridColor = theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
-
-    const sectionCardStyle = {
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '12px',
-        padding: '1.5rem'
-    };
+    const chartGridColor = 'rgba(17, 24, 39, 0.18)';
 
     React.useEffect(() => {
         const refreshAnalytics = () => setRefreshKey((previous) => previous + 1);
@@ -261,26 +252,11 @@ function Analytics() {
                 <h2 className="mb-1">Learning Analytics</h2>
                 <p className="text-muted mb-4">Your progress at a glance</p>
 
-                <div style={{ ...sectionCardStyle, textAlign: 'center', padding: '3rem 1.5rem' }}>
-                    <div
-                        aria-hidden="true"
-                        style={{
-                            width: '74px',
-                            height: '74px',
-                            border: '2px solid rgba(79,142,247,0.35)',
-                            borderRadius: '16px',
-                            margin: '0 auto 1rem',
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            padding: '12px',
-                            background: 'rgba(79,142,247,0.08)'
-                        }}
-                    >
-                        <span style={{ width: '8px', height: '20px', background: '#4f8ef7', borderRadius: '4px' }}></span>
-                        <span style={{ width: '8px', height: '30px', background: '#7c3aed', borderRadius: '4px' }}></span>
-                        <span style={{ width: '8px', height: '14px', background: '#06d6a0', borderRadius: '4px' }}></span>
+                <div className="analytics-card analytics-empty">
+                    <div aria-hidden="true" className="analytics-empty-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </div>
                     <h5 className="mb-2">No activity yet. Start watching a course to see your analytics!</h5>
                     <Button as={Link} to="/courses" variant="primary">Browse Courses</Button>
@@ -296,52 +272,52 @@ function Analytics() {
 
             <Row className="g-3 mb-4">
                 <Col sm={6} lg={3}>
-                    <Card style={sectionCardStyle} className="h-100">
+                    <Card className="h-100 analytics-card">
                         <div className="text-muted small">Total Videos Watched</div>
                         <h3 className="mb-0 mt-2">{analytics.totalVideosWatched}</h3>
                     </Card>
                 </Col>
                 <Col sm={6} lg={3}>
-                    <Card style={sectionCardStyle} className="h-100">
+                    <Card className="h-100 analytics-card">
                         <div className="text-muted small">Active Study Days</div>
                         <h3 className="mb-0 mt-2">{analytics.activeStudyDays}</h3>
                     </Card>
                 </Col>
                 <Col sm={6} lg={3}>
-                    <Card style={sectionCardStyle} className="h-100">
+                    <Card className="h-100 analytics-card">
                         <div className="text-muted small">Current Streak</div>
                         <h3 className="mb-0 mt-2">{analytics.currentStreak}</h3>
                     </Card>
                 </Col>
                 <Col sm={6} lg={3}>
-                    <Card style={sectionCardStyle} className="h-100">
+                    <Card className="h-100 analytics-card">
                         <div className="text-muted small">Topics to Review</div>
                         <h3 className="mb-0 mt-2">{analytics.topicsToReviewCount}</h3>
                     </Card>
                 </Col>
             </Row>
 
-            <Card style={sectionCardStyle} className="mb-4">
+            <Card className="mb-4 analytics-card">
                 <h5 className="mb-3">Study activity - last 7 days</h5>
-                <div className="no-transition" style={{ width: '100%', height: 280 }}>
+                <div className="no-transition analytics-chart analytics-chart-sm">
                     <ResponsiveContainer>
                         <BarChart data={analytics.weeklyData}>
                             <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
                             <XAxis dataKey="day" tick={{ fill: chartLabelColor, fontFamily: 'inherit' }} axisLine={{ stroke: chartGridColor }} tickLine={{ stroke: chartGridColor }} />
                             <YAxis tick={{ fill: chartLabelColor, fontFamily: 'inherit' }} axisLine={{ stroke: chartGridColor }} tickLine={{ stroke: chartGridColor }} />
-                            <Tooltip contentStyle={chartTooltipStyle} cursor={{ fill: 'rgba(79,142,247,0.08)' }} />
-                            <Bar dataKey="count" fill="#4f8ef7" radius={[6, 6, 0, 0]} />
+                            <Tooltip contentStyle={chartTooltipStyle} cursor={{ fill: 'var(--accent-bg)' }} />
+                            <Bar dataKey="count" fill="var(--accent)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
             </Card>
 
-            <Card style={sectionCardStyle} className="mb-4">
+            <Card className="mb-4 analytics-card">
                 <h5 className="mb-3">Course completion</h5>
                 {analytics.courseProgressData.length === 0 ? (
                     <Alert variant="secondary" className="mb-0">No courses in your learning path yet.</Alert>
                 ) : (
-                    <div className="no-transition" style={{ width: '100%', height: Math.max(260, analytics.courseProgressData.length * 70) }}>
+                    <div className="no-transition analytics-chart analytics-chart-dynamic" style={{ '--chart-height': `${Math.max(260, analytics.courseProgressData.length * 70)}px` }}>
                         <ResponsiveContainer>
                             <BarChart
                                 layout="vertical"
@@ -361,7 +337,7 @@ function Analytics() {
                                         fontFamily="inherit"
                                     />
                                     {analytics.courseProgressData.map((entry) => (
-                                        <Cell key={entry.id} fill={entry.completion >= 100 ? '#4f8ef7' : '#06d6a0'} />
+                                        <Cell key={entry.id} fill={entry.completion >= 100 ? 'var(--accent)' : '#06d6a0'} />
                                     ))}
                                 </Bar>
                             </BarChart>
@@ -379,13 +355,13 @@ function Analytics() {
                 )}
             </Card>
 
-            <Card style={sectionCardStyle} className="mb-4">
+            <Card className="mb-4 analytics-card">
                 <h5 className="mb-3">Topics to review</h5>
                 {analytics.weakTopicsPieData.length === 0 ? (
                     <Alert variant="secondary" className="mb-0">Complete some quizzes to see insights</Alert>
                 ) : (
                     <>
-                        <div className="no-transition" style={{ width: '100%', height: 300 }}>
+                        <div className="no-transition analytics-chart analytics-chart-lg">
                             <ResponsiveContainer>
                                 <PieChart>
                                     <Pie
@@ -409,7 +385,7 @@ function Analytics() {
                         </div>
                         <div className="d-flex flex-wrap gap-2 mt-2">
                             {analytics.weakTopicsPieData.map((item, index) => (
-                                <Badge key={item.name} style={{ background: pieColors[index % pieColors.length] }}>
+                                <Badge key={item.name} className={`topic-color-badge topic-color-${index % pieColors.length}`}>
                                     {item.name}: {item.value}
                                 </Badge>
                             ))}
@@ -418,7 +394,7 @@ function Analytics() {
                 )}
             </Card>
 
-            <Card style={sectionCardStyle}>
+            <Card className="analytics-card">
                 <h5 className="mb-3">AI Learning Insight</h5>
                 <Button onClick={handleGetInsight} disabled={insightLoading} variant="outline-info" className="mb-3">
                     {insightLoading ? (
@@ -432,16 +408,9 @@ function Analytics() {
                 </Button>
 
                 {insightText && (
-                    <div
-                        style={{
-                            background: 'rgba(79,142,247,0.08)',
-                            border: '1px solid rgba(79,142,247,0.25)',
-                            borderRadius: '10px',
-                            padding: '0.9rem 1rem'
-                        }}
-                    >
+                    <div className="analytics-insight-box">
                         <div className="d-flex align-items-start gap-2">
-                            <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>🤖</span>
+                            <span aria-hidden="true" className="analytics-insight-icon">🤖</span>
                             <p className="mb-0">{insightText}</p>
                         </div>
                     </div>

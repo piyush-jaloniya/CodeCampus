@@ -39,9 +39,9 @@ function ConfirmModal({
 
     if (!show) return null;
 
-    const confirmBtnStyle = confirmVariant === 'danger'
-        ? { background: '#ef4444', color: '#fff', border: 'none', boxShadow: '0 4px 14px rgba(239,68,68,0.3)' }
-        : { background: 'linear-gradient(135deg, var(--accent), #1d4ed8)', color: '#fff', border: 'none', boxShadow: '0 4px 14px rgba(79,142,247,0.3)' };
+    const confirmBtnClass = confirmVariant === 'danger'
+        ? 'confirm-btn confirm-btn-danger'
+        : 'confirm-btn confirm-btn-primary';
 
     return (
         <div
@@ -70,8 +70,7 @@ function ConfirmModal({
                     </button>
                     <button
                         type="button"
-                        className="btn"
-                        style={confirmBtnStyle}
+                        className={`btn ${confirmBtnClass}`}
                         onClick={onConfirm}
                     >
                         {confirmLabel}

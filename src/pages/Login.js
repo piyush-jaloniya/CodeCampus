@@ -119,11 +119,11 @@ function Login({ onLogin }) {
                         </Button>
 
                         <div className="text-center mb-3">
-                            <Link to="/forgot-password" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Forgot password?</Link>
+                            <Link to="/forgot-password" className="auth-link-muted">Forgot password?</Link>
                         </div>
 
-                        <div className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                            Don’t have an account? <Link to="/signup" style={{ color: 'var(--accent)', fontWeight: 600 }}>Create one free</Link>
+                        <div className="text-center auth-link-muted">
+                            Don’t have an account? <Link to="/signup" className="auth-link-accent">Create one free</Link>
                         </div>
                     </Form>
                 </div>

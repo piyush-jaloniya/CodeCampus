@@ -37,6 +37,13 @@ function App() {
     const navigate = useNavigate();
 
     useEffect(() => {
+        const root = document.documentElement;
+        root.classList.remove('dark');
+        root.classList.add('light');
+        root.style.colorScheme = 'light';
+    }, []);
+
+    useEffect(() => {
         let isMounted = true;
 
         const restoreSession = async () => {

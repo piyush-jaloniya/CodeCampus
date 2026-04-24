@@ -5,11 +5,10 @@ import { Link } from 'react-router-dom';
 function NotFound() {
     return (
         <Container
-            className="d-flex flex-column justify-content-center align-items-center text-center"
-            style={{ minHeight: 'calc(100vh - 120px)', color: 'var(--text-primary)' }}
+            className="d-flex flex-column justify-content-center align-items-center text-center notfound-page"
         >
-            <h1 style={{ fontSize: '5rem', fontWeight: 800, marginBottom: '0.5rem' }}>404</h1>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+            <h1 className="notfound-code">404</h1>
+            <p className="notfound-copy">
                 Oops! This page does not exist.
             </p>
             <Button as={Link} to="/" variant="primary">

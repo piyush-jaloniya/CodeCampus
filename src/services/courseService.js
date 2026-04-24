@@ -12,7 +12,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
         category: 'Backend',
         difficulty: 'Beginner',
-        duration: '40 hours',
         rating: 4.5,
         reviews: 128,
         students: 1250
@@ -28,7 +27,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1621839673705-6617adf9e890?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80',
         category: 'Frontend',
         difficulty: 'Beginner',
-        duration: '50 hours',
         rating: 4.8,
         reviews: 156,
         students: 1890
@@ -40,7 +38,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
         category: 'Frontend',
         difficulty: 'Intermediate',
-        duration: '35 hours',
         rating: 4.7,
         reviews: 142,
         students: 1620
@@ -52,7 +49,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
         category: 'Core CS',
         difficulty: 'Intermediate',
-        duration: '45 hours',
         rating: 4.6,
         reviews: 134,
         students: 1410
@@ -68,7 +64,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
         category: 'AI/ML',
         difficulty: 'Advanced',
-        duration: '60 hours',
         rating: 4.9,
         reviews: 167,
         students: 2100
@@ -80,7 +75,6 @@ export const courseCatalog = [
         image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80',
         category: 'Backend',
         difficulty: 'Beginner',
-        duration: '55 hours',
         rating: 4.7,
         reviews: 149,
         students: 1750

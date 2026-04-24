@@ -146,15 +146,11 @@ function OnboardingQuiz({ courseList, onComplete }) {
 
     return (
         <div className="onboarding-overlay">
-            <div className="onboarding-card" style={{ position: 'relative' }}>
+            <div className="onboarding-card">
                 <button
+                    type="button"
                     onClick={handleSkip}
-                    style={{
-                        position: 'absolute', top: '16px', right: '16px',
-                        background: 'transparent', border: 'none',
-                        color: 'var(--text-muted)', fontSize: '0.85rem',
-                        cursor: 'pointer', textDecoration: 'underline'
-                    }}
+                    className="onboarding-skip-btn"
                 >
                     Skip for now
                 </button>

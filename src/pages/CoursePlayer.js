@@ -51,7 +51,7 @@ function CoursePlayer() {
                 </Col>
                 <Col lg={4}>
                     <Card className="h-100">
-                        <Card.Img variant="top" src={course.image} style={{ height: '200px', objectFit: 'cover' }} />
+                        <Card.Img variant="top" src={course.image} className="course-player-image" />
                         <Card.Body className="d-flex flex-column">
                             <Card.Title>{course.name}</Card.Title>
                             <div className="mb-2">
@@ -59,9 +59,6 @@ function CoursePlayer() {
                                 <Badge bg="secondary">{course.difficulty}</Badge>
                             </div>
                             <Card.Text className="flex-grow-1">{course.description}</Card.Text>
-                            <small className="text-muted d-block mb-3">
-                                Duration: {course.duration}
-                            </small>
                             <div className="d-flex gap-2">
                                 <Button as={Link} to="/courses" variant="outline-primary" className="flex-grow-1">
                                     Back

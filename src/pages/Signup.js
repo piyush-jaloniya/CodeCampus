@@ -166,14 +166,13 @@ function Signup({ onSignup }) {
                             {formData.password && (
                                 <div className="mt-2">
                                     <div className="d-flex justify-content-between">
-                                        <small style={{ color: 'var(--text-secondary)' }}>Password strength</small>
-                                        <small style={{ color: passwordStrength.variant === 'success' ? 'var(--success)' : passwordStrength.variant === 'danger' ? 'var(--danger-color)' : 'var(--warning-color)', fontWeight: 600 }}>{passwordStrength.label}</small>
+                                        <small className="password-strength-label">Password strength</small>
+                                        <small className={`password-strength-value ${passwordStrength.variant}`}>{passwordStrength.label}</small>
                                     </div>
                                     <ProgressBar
                                         now={passwordStrength.score}
                                         variant={passwordStrength.variant}
-                                        className="mt-1"
-                                        style={{ height: '5px', borderRadius: '99px' }}
+                                        className="mt-1 password-strength-bar"
                                     />
                                 </div>
                             )}
@@ -199,8 +198,8 @@ function Signup({ onSignup }) {
                             Create Free Account
                         </Button>
 
-                        <div className="text-center" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                            Already have an account? <Link to="/login" style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</Link>
+                        <div className="text-center auth-link-muted">
+                            Already have an account? <Link to="/login" className="auth-link-accent">Sign in</Link>
                         </div>
                     </Form>
                 </div>

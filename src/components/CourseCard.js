@@ -1,7 +1,12 @@
-import React, { useId, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AISummaryButton from './AISummaryButton';
+import {
+    extractYouTubeVideoId,
+    formatVideoDurationLabel,
+    getYouTubeDurationSecondsById
+} from '../utils/youtubeDuration';
 
 /* ── Inline SVG star (clean, scalable, no emoji weirdness) ── */
 function StarIcon({ filled, half }) {
@@ -73,7 +78,7 @@ function InteractiveStars({ currentRating, onRate }) {
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        style={{ transition: 'fill 0.12s ease, transform 0.12s ease', display: 'block', transform: hovered === value ? 'scale(1.25)' : 'scale(1)' }}
+                        className={`star-icon ${hovered === value ? 'is-hovered' : ''}`}
                         aria-hidden="true"
                     >
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -84,28 +89,17 @@ function InteractiveStars({ currentRating, onRate }) {
     );
 }
 
-const DIFFICULTY_STYLES = {
-    Beginner: { bg: 'rgba(6, 214, 160, 0.15)', color: '#06d6a0', border: 'rgba(6, 214, 160, 0.3)' },
-    Intermediate: { bg: 'rgba(247, 165, 37, 0.15)', color: '#f7a525', border: 'rgba(247, 165, 37, 0.3)' },
-    Advanced: { bg: 'rgba(248, 66, 66, 0.15)', color: '#f84242', border: 'rgba(248, 66, 66, 0.3)' },
+const DIFFICULTY_TONES = {
+    Beginner: 'tone-success',
+    Intermediate: 'tone-warning',
+    Advanced: 'tone-danger',
 };
 
-const CATEGORY_STYLE = { bg: 'rgba(79, 142, 247, 0.15)', color: '#4f8ef7', border: 'rgba(79, 142, 247, 0.3)' };
+const CATEGORY_TONE = 'tone-accent';
 
-function MicroBadge({ label, style }) {
+function MicroBadge({ label, tone = 'tone-muted' }) {
     return (
-        <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '2px 8px',
-            borderRadius: '99px',
-            fontSize: '0.7rem',
-            fontWeight: 700,
-            letterSpacing: '0.04em',
-            background: style.bg,
-            color: style.color,
-            border: `1px solid ${style.border}`,
-        }}>
+        <span className={`micro-badge ${tone}`}>
             {label}
         </span>
     );
@@ -116,7 +110,35 @@ function CourseCard({
     image, onWishlist, wishlist, user, category, difficulty,
     duration, rating, reviews, userRating, onRate, onTestYourself
 }) {
+    const [liveDuration, setLiveDuration] = useState('');
     const isWishlisted = wishlist.includes(course);
+
+    useEffect(() => {
+        let isDisposed = false;
+
+        const videoId = extractYouTubeVideoId(link);
+        if (!videoId) {
+            setLiveDuration('');
+            return undefined;
+        }
+
+        getYouTubeDurationSecondsById(videoId)
+            .then((seconds) => {
+                if (isDisposed || !seconds) {
+                    return;
+                }
+                setLiveDuration(formatVideoDurationLabel(seconds));
+            })
+            .catch(() => {
+                if (!isDisposed) {
+                    setLiveDuration('');
+                }
+            });
+
+        return () => {
+            isDisposed = true;
+        };
+    }, [link]);
 
     const handleWishlist = () => {
         if (!user) {
@@ -134,7 +156,7 @@ function CourseCard({
         onRate(value);
     };
 
-    const diffStyle = DIFFICULTY_STYLES[difficulty] || { bg: 'rgba(148,163,184,0.1)', color: '#9aa5be', border: 'rgba(148,163,184,0.3)' };
+    const difficultyTone = DIFFICULTY_TONES[difficulty] || 'tone-muted';
 
     return (
         <div className="course-card-v2">
@@ -142,19 +164,14 @@ function CourseCard({
             <div className="cc-thumb">
                 <img src={image} alt={course} className="cc-thumb-img" />
                 <div className="cc-thumb-overlay" />
-                {/* Floating badges */}
-                <div className="cc-badge-row">
-                    {category && <MicroBadge label={category} style={CATEGORY_STYLE} />}
-                    {difficulty && <MicroBadge label={difficulty} style={diffStyle} />}
-                </div>
                 {/* Duration chip */}
-                {duration && (
+                {(duration || liveDuration) && (
                     <div className="cc-duration-chip">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                             <circle cx="12" cy="12" r="10" />
                             <polyline points="12 6 12 12 16 14" />
                         </svg>
-                        {duration}
+                        {liveDuration || duration}
                     </div>
                 )}
             </div>
@@ -169,6 +186,12 @@ function CourseCard({
                         <StarDisplay rating={rating} />
                         <span className="cc-rating-num">{rating}</span>
                         <span className="cc-rating-count">({reviews})</span>
+                        {(category || difficulty) && (
+                            <span className="cc-rating-meta-tags">
+                                {category && <MicroBadge label={category} tone={CATEGORY_TONE} />}
+                                {difficulty && <MicroBadge label={difficulty} tone={difficultyTone} />}
+                            </span>
+                        )}
                     </div>
                 )}
 

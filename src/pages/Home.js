@@ -1,14 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Container, Button, Row, Col, Card, Badge } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getTrendingCourses } from '../services/courseService';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
 function Home({ user, authReady = true }) {
     const [trendingCourses, setTrendingCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const location = useLocation();
     const isLoggedIn = Boolean(user);
     const showGuestCtas = authReady && !isLoggedIn;
+
+    const homePalette = useMemo(() => {
+        const params = new URLSearchParams(location.search);
+        const queryPalette = params.get('palette');
+
+        if (queryPalette === 'bw') {
+            localStorage.setItem('homePalette', 'bw');
+            return 'bw';
+        }
+
+        const storedPalette = localStorage.getItem('homePalette');
+        return storedPalette === 'bw' ? 'bw' : 'forest';
+    }, [location.search]);
 
     useEffect(() => {
         document.title = 'CodeCampus – Learn. Build. Grow.';
@@ -52,26 +66,19 @@ function Home({ user, authReady = true }) {
     };
 
     return (
-        <>
+        <div className={`home-page-theme ${homePalette === 'bw' ? 'home-page-bw' : 'home-page-forest'}`}>
             {/* Hero Section */}
             <div className="hero-section text-center">
-                <Container style={{ position: 'relative', zIndex: 1 }}>
-                    <p style={{
-                        fontSize: 'var(--text-sm)',
-                        fontWeight: 700,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        color: 'var(--accent)',
-                        marginBottom: 'var(--sp-4)'
-                    }}>
+                <Container className="hero-content-shell">
+                    <p className="hero-kicker">
                         ✨ AI-Powered Learning
                     </p>
-                    <h1 className="display-4 fw-bold mb-3" style={{ letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+                    <h1 className="display-4 fw-bold mb-3 hero-title">
                         Master Computer Science,
                         <br />
-                        <span style={{ color: 'var(--accent)' }}>at your own pace.</span>
+                        <span className="hero-title-accent">at your own pace.</span>
                     </h1>
-                    <p className="lead mb-5" style={{ color: 'var(--text-secondary)', maxWidth: '540px', margin: '0 auto var(--sp-8)' }}>
+                    <p className="lead mb-5 hero-lead">
                         Curated CS courses, AI-generated study plans, and smart flashcards — all in one place.
                     </p>
                     <div className="d-flex flex-column flex-md-row gap-3 justify-content-center">
@@ -114,28 +121,28 @@ function Home({ user, authReady = true }) {
 
             {/* Why CodeCampus — AI Feature Highlights */}
             <Container className="my-5 py-3">
-                <h2 className="text-center mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Why CodeCampus?</h2>
-                <p className="text-center mb-5" style={{ color: 'var(--text-secondary)' }}>Everything you need to learn smarter, not harder.</p>
+                <h2 className="text-center mb-2 fw-bold section-title">Why CodeCampus?</h2>
+                <p className="text-center mb-5 section-subtitle">Everything you need to learn smarter, not harder.</p>
                 <Row className="g-4">
                     <Col md={4}>
                         <div className="home-feature-card p-4 rounded-4 text-center h-100">
-                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🤖</div>
+                            <div className="home-feature-icon">🤖</div>
                             <h3 className="h5 fw-bold mb-2">AI Study Companion</h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Ask questions about any topic while watching lectures. Get instant explanations from Gemini AI.</p>
+                            <p className="home-feature-copy">Ask questions about any topic while watching lectures. Get instant explanations from Gemini AI.</p>
                         </div>
                     </Col>
                     <Col md={4}>
                         <div className="home-feature-card p-4 rounded-4 text-center h-100">
-                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🗺️</div>
+                            <div className="home-feature-icon">🗺️</div>
                             <h3 className="h5 fw-bold mb-2">Personalized Roadmap</h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Take a 2-minute quiz and get an AI-curated learning path tailored to your goals and skill level.</p>
+                            <p className="home-feature-copy">Take a 2-minute quiz and get an AI-curated learning path tailored to your goals and skill level.</p>
                         </div>
                     </Col>
                     <Col md={4}>
                         <div className="home-feature-card p-4 rounded-4 text-center h-100">
-                            <div style={{ fontSize: '2.5rem', marginBottom: 'var(--sp-4)' }}>🏗️</div>
+                            <div className="home-feature-icon">🏗️</div>
                             <h3 className="h5 fw-bold mb-2">Smart Flashcards</h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.6 }}>Save any term from AI notes as a flashcard. Generate AI explanations on the back with one click.</p>
+                            <p className="home-feature-copy">Save any term from AI notes as a flashcard. Generate AI explanations on the back with one click.</p>
                         </div>
                     </Col>
                 </Row>
@@ -146,16 +153,16 @@ function Home({ user, authReady = true }) {
                 <Container className="text-center">
                     {user ? (
                         <>
-                            <h2 className="mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Ready to continue learning?</h2>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>Your roadmap, flashcards, and progress are waiting.</p>
+                            <h2 className="mb-2 fw-bold cta-title">Ready to continue learning?</h2>
+                            <p className="cta-subtitle mb-4">Your roadmap, flashcards, and progress are waiting.</p>
                             <Button as={Link} to="/dashboard" variant="primary" size="lg">
                                 Go to Dashboard →
                             </Button>
                         </>
                     ) : (
                         <>
-                            <h2 className="mb-2 fw-bold" style={{ letterSpacing: '-0.02em' }}>Build your personalized path in 2 minutes.</h2>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--sp-6)' }}>Take a quick quiz. Get a roadmap. Start learning today.</p>
+                            <h2 className="mb-2 fw-bold cta-title">Build your personalized path in 2 minutes.</h2>
+                            <p className="cta-subtitle mb-4">Take a quick quiz. Get a roadmap. Start learning today.</p>
                             <Button as={Link} to="/signup" variant="primary" size="lg">
                                 Create Free Account →
                             </Button>
@@ -172,12 +179,12 @@ function Home({ user, authReady = true }) {
                     <Row className="g-4 justify-content-center">
                         {trendingCourses.map((course) => (
                             <Col key={course.name} md={4}>
-                                <Card className="h-100 shadow-sm border-0">
-                                    <Card.Img variant="top" src={course.image} style={{ height: '200px', objectFit: 'cover' }} />
+                                <Card className="h-100 shadow-sm border-0 trending-card">
+                                    <Card.Img variant="top" src={course.image} className="trending-image" />
                                     <Card.Body className="d-flex flex-column">
                                         <Card.Title>{course.name}</Card.Title>
                                         <div className="mb-2">
-                                            <small className="text-warning">
+                                            <small className="trending-rating">
                                                 {renderStars(course.rating)} <span className="fw-bold">{course.rating}</span>
                                                 <span className="text-muted"> ({course.reviews} reviews)</span>
                                             </small>
@@ -197,7 +204,7 @@ function Home({ user, authReady = true }) {
                     </Row>
                 )}
             </Container>
-        </>
+        </div>
     );
 }
 

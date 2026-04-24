@@ -7,33 +7,25 @@ import { getCourses } from '../services/courseService';
 import StudyHeatmap from '../components/StudyHeatmap';
 import { askGeminiJSON } from '../utils/geminiApi';
 
-const stageColorMap = {
-    blue: '#4f8ef7',
-    purple: '#7c3aed',
-    green: '#06d6a0',
-    amber: '#f7a525'
+const stageToneMap = {
+    blue: 'dashboard-stage-blue',
+    purple: 'dashboard-stage-purple',
+    green: 'dashboard-stage-green',
+    amber: 'dashboard-stage-amber'
 };
 
 function StageCard({ stage, completedCourses }) {
-    const color = stageColorMap[stage?.color] || stageColorMap.blue;
+    const stageToneClass = stageToneMap[stage?.color] || stageToneMap.blue;
     const stageCourses = Array.isArray(stage?.courses) ? stage.courses : [];
     const isComplete = stageCourses.length > 0 && stageCourses.every((course) => completedCourses.includes(course.id));
 
     return (
-        <Card
-            className="dashboard-card"
-            style={{
-                minWidth: '220px',
-                maxWidth: '260px',
-                flexShrink: 0,
-                borderTop: `4px solid ${color}`
-            }}
-        >
+        <Card className={`dashboard-card dashboard-stage-card ${stageToneClass}`}>
             <Card.Body className="p-3">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                    <Badge style={{ backgroundColor: color }}>{`Stage ${stage?.stageNumber || '-'}`}</Badge>
+                    <Badge className="dashboard-stage-badge">{`Stage ${stage?.stageNumber || '-'}`}</Badge>
                     {isComplete && (
-                        <span aria-label="Stage completed" style={{ color: '#16a34a', fontSize: '1.1rem', fontWeight: 700 }}>
+                        <span aria-label="Stage completed" className="dashboard-stage-done">
                             ✓
                         </span>
                     )}
@@ -254,10 +246,10 @@ function Dashboard({ user, wishlist }) {
                                 {(user.username || 'L').slice(0, 1).toUpperCase()}
                             </div>
                             <div className="flex-grow-1">
-                                <h2 className="mb-0 fw-bold" style={{ fontSize: 'var(--text-2xl)', letterSpacing: '-0.02em' }}>
+                                <h2 className="mb-0 fw-bold dashboard-greeting-title">
                                     Welcome back, {user?.username || 'Learner'}! 👋
                                 </h2>
-                                <p className="mb-0" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                <p className="mb-0 dashboard-greeting-email">
                                     {user.email}
                                 </p>
                             </div>
@@ -358,17 +350,17 @@ function Dashboard({ user, wishlist }) {
                                     <div className="roadmap-loading-bar mb-3">
                                         <span className="roadmap-loading-fill"></span>
                                     </div>
-                                    <div className="d-flex gap-2" style={{ overflowX: 'auto', paddingBottom: '4px' }}>
+                                    <div className="d-flex gap-2 dashboard-roadmap-loading-row">
                                         {[1, 2, 3].map((item) => (
-                                            <Card key={item} className="dashboard-card" style={{ minWidth: '200px', flexShrink: 0 }}>
+                                            <Card key={item} className="dashboard-card dashboard-roadmap-skeleton">
                                                 <Card.Body>
-                                                    <div className="skeleton-bg rounded mb-2" style={{ height: '12px', width: '90px' }}></div>
-                                                    <div className="skeleton-bg rounded mb-2" style={{ height: '14px', width: '130px' }}></div>
-                                                    <div className="skeleton-bg rounded mb-2" style={{ height: '10px', width: '160px' }}></div>
-                                                    <div className="skeleton-bg rounded mb-2" style={{ height: '10px', width: '150px' }}></div>
+                                                    <div className="skeleton-bg rounded mb-2 skeleton-line-sm skeleton-w-90"></div>
+                                                    <div className="skeleton-bg rounded mb-2 skeleton-line-md skeleton-w-130"></div>
+                                                    <div className="skeleton-bg rounded mb-2 skeleton-line-xs skeleton-w-160"></div>
+                                                    <div className="skeleton-bg rounded mb-2 skeleton-line-xs skeleton-w-150"></div>
                                                     <div className="d-flex gap-1 mt-2">
-                                                        <div className="skeleton-bg rounded-pill" style={{ height: '20px', width: '60px' }}></div>
-                                                        <div className="skeleton-bg rounded-pill" style={{ height: '20px', width: '52px' }}></div>
+                                                        <div className="skeleton-bg rounded-pill skeleton-pill-60"></div>
+                                                        <div className="skeleton-bg rounded-pill skeleton-pill-52"></div>
                                                     </div>
                                                 </Card.Body>
                                             </Card>
@@ -379,34 +371,18 @@ function Dashboard({ user, wishlist }) {
 
                             {roadmapError && !roadmapLoading && (
                                 <div className="text-center py-4">
-                                    <p style={{ color: 'var(--danger-color)', marginBottom: 'var(--sp-3)' }}>⚠️ Failed to generate roadmap. Check your connection and try again.</p>
+                                    <p className="dashboard-error-copy">⚠️ Failed to generate roadmap. Check your connection and try again.</p>
                                     <Button size="sm" variant="outline-primary" onClick={handleRegenerateRoadmap}>Retry</Button>
                                 </div>
                             )}
 
                             {!roadmapLoading && roadmap?.stages?.length > 0 && (
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'flex-start',
-                                        gap: '8px',
-                                        overflowX: 'auto',
-                                        padding: '1rem 0'
-                                    }}
-                                >
+                                <div className="dashboard-roadmap-row">
                                     {roadmap.stages.map((stage, index) => (
                                         <React.Fragment key={`${stage.stageNumber}-${index}`}>
                                             <StageCard stage={stage} completedCourses={completedCourses} />
                                             {index < roadmap.stages.length - 1 && (
-                                                <div
-                                                    style={{
-                                                        fontSize: '20px',
-                                                        color: 'var(--accent)',
-                                                        marginTop: '40px',
-                                                        flexShrink: 0,
-                                                        opacity: 0.7
-                                                    }}
-                                                >
+                                                <div className="dashboard-roadmap-chevron">
                                                     <i className="bi bi-chevron-right" />
                                                 </div>
                                             )}
@@ -451,10 +427,10 @@ function Dashboard({ user, wishlist }) {
                     <StudyHeatmap />
                 </>
             ) : (
-                <div className="text-center py-5" style={{ color: 'var(--text-secondary)' }}>
-                    <p style={{ fontSize: '2.5rem' }}>🔒</p>
-                    <h5 style={{ color: 'var(--text-primary)' }}>Sign in to view your dashboard</h5>
-                    <p style={{ fontSize: 'var(--text-sm)' }}>Your learning progress, roadmap, and saved courses await.</p>
+                <div className="text-center py-5 dashboard-empty">
+                    <p className="dashboard-empty-icon">🔒</p>
+                    <h5>Sign in to view your dashboard</h5>
+                    <p>Your learning progress, roadmap, and saved courses await.</p>
                     <Link to="/login" className="btn btn-primary mt-2">Sign In</Link>
                 </div>
             )}
